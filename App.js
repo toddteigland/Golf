@@ -30,13 +30,13 @@ export default function App() {
             headerTintColor: '#fff'
           }}
           />       
-          <Stack.Screen
+          {/* <Stack.Screen
             name='Login'
             component={UserLogin}
             options={{
               title: 'Login User'
             }}
-          />
+          /> */}
         <Stack.Screen
           name="Create"
           component={CreateUser}
