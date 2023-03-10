@@ -1,41 +1,47 @@
 import React, { useEffect, useState } from "react";
-import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  Text,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  FlatList,
+  Button,
+} from "react-native";
 import Parse from "parse/react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 
 export default function Profile({ props, route }) {
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState("");
+  const [handicap, setHandicap] = useState();
+  const [myTournaments, setMyTournaments] = useState([]);
   const navigation = useNavigation();
   const currentUser = username;
   const setIsLoggedIn = route.params.setIsLoggedIn;
 
   useEffect(() => {
-    // Since the async method Parse.User.currentAsync is needed to
-    // retrieve the current user data, you need to declare an async
-    // function here and call it afterwards
     async function getCurrentUser() {
-      // This condition ensures that username is updated only if needed
-      // if (username === '') {
-        const currentUser = await Parse.User.currentAsync();
-        console.log('CURRENT USER FROM PROFILE USEEFFECT: ', currentUser);
-        if (currentUser !== null) {
-          setUsername(currentUser.getUsername());
-        }
+      const query = new Parse.Query("User");
+      const currentUser = await Parse.User.currentAsync();
+      console.log("CURRENT USER FROM PROFILE USEEFFECT: ", currentUser);
+      if (currentUser !== null) {
+        const user = await query.get(currentUser);
+        setUsername(currentUser.getUsername());
+        setHandicap(user.get("handicap"));
       }
-      getCurrentUser();
-    }, []);
-    
-    const handleLogout = async function () {
-      return await Parse.User.logOut()
+    }
+    getCurrentUser();
+  }, []);
+
+  const handleLogout = async function () {
+    return await Parse.User.logOut()
       .then(async () => {
         const currentUser = await Parse.User.currentAsync();
         if (currentUser === null) {
           console.log(`User ${username} Logged out`);
           setIsLoggedIn(false);
-          // props.toggleLoggedIn(false);
         }
-        AsyncStorage.setItem('keepLoggedIn', JSON.stringify(false));
+        AsyncStorage.setItem("keepLoggedIn", JSON.stringify(false));
         navigation.navigate("Home");
         return true;
       })
@@ -45,30 +51,70 @@ export default function Profile({ props, route }) {
       });
   };
 
+  useEffect(() => {
+    async function fetchMyTournaments() {
+      const currentUser = await Parse.User.currentAsync();
+      const query = new Parse.Query("Tournaments");
+      query.equalTo("players", currentUser);
+      query.find().then(
+        (results) => {
+          console.log("MY TOURNAMENTS:   ", results);
+          setMyTournaments(results);
+        },
+        (error) => {
+          console.error(error);
+        }
+      );
+    }
+    fetchMyTournaments();
+  }, []);
+
   return (
     <View style={styles.container}>
-      {/* {!currentUser ? ( */}
-        <View style={styles.helloUsercontainer}>
-          <Text style={styles.username}>Hello {username}</Text>
+      <View style={styles.helloUsercontainer}>
+        <Text style={styles.username}>
+          Hello {username} ({handicap})
+        </Text>
+      </View>
+
+      <View>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text>Logout</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.myTournaments}>
+        <View style={styles.headerRow}>
+          <Text style={[styles.headerCell, { flex: 0.7 }]}>Name</Text>
+          <Text style={[styles.headerCell, { flex: 0.3 }]}>
+            Enter Tournament
+          </Text>
         </View>
-        <View>
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-              <Text>Logout</Text>
-            </TouchableOpacity>
-        </View>
-      {/* ) : (
-        <View>
-          <Text>Please Log in</Text>
-        </View>
-      )} */}
+        <FlatList
+          data={myTournaments}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <View style={styles.row}>
+              <Text style={[styles.cell, { flex: 0.7 }]}>
+                {item.get("name")}
+              </Text>
+              <Button
+                style={[styles.button, { flex: 0.3 }]}
+                title="Start"
+                onPress={() => enterTournament(item)}
+              />
+            </View>
+          )}
+        />
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#282634',
-    minHeight: '100%',
+    backgroundColor: "#282634",
+    minHeight: "100%",
   },
   helloUsercontainer: {
     position: "absolute",
@@ -86,16 +132,21 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   logoutButton: {
-    position: 'relative',
+    position: "relative",
     top: 2,
     right: 2,
     marginLeft: 325,
-    width: '20%',
+    width: "20%",
     // marginTop: 50,
     borderRadius: 8,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     padding: 8,
-    alignItems: 'center',
+    alignItems: "center",
     elevation: 4,
+  },
+  myTournaments: {
+    backgroundColor: '#DCDCDC',
+    marginTop: 20,
+    padding: 12,
   },
 });

@@ -29,50 +29,46 @@ export default function CreateUser({ route }) {
   const [handicap, setHandicap] = useState("");
   const setIsLoggedIn = route.params.setIsLoggedIn;
 
-  const doUserRegistration = async function () {
+  // const doUserRegistration = async function () {
 
-    const usernameValue = username;
-    const passwordValue = password;
-    const handicapValue = handicap;
+  //   const usernameValue = username;
+  //   const passwordValue = password;
+  //   const handicapValue = handicap;
 
-    return await Parse.User.signUp(usernameValue, passwordValue)
-      .then((createdUser) => {
-        Alert.alert(
-          "Success!",
-          `User ${createdUser.get("username")} was successfully created!`
-          );
-          setIsLoggedIn(true);
-          navigation.navigate('Home');
-        return true;
-      })
-      .catch((error) => {
-        Alert.alert("Error!", error.message);
-        return false;
-      });
-  };
-
-  // const doUserRegistration = async () => {
-  //   const currentUser = await Parse.User.currentAsync();
-  //   console.log('CURRENT USER DURING CREATION:', currentUser);
-  //   const user = new Parse.User();
-  //   user.set("username", username);
-  //   user.set("password", password);
-  //   user.set("handicap", parseInt(handicap));
-  //   try {
-  //     await user.signUp();
-  //     // console.log(typeof props.setLoggedIn, props.setLoggedIn);
-  //     console.log("USER REGISTERED", username, handicap);
-  //     AsyncStorage.setItem('keepLoggedIn', 'true' );
-  //     Alert.alert(`User ${username} (${handicap}) was successfully created!`);
-  //   } catch (error) {
-  //     Alert.alert(`Error!, ${error.message}`);
-  //     console.log("ERROR: ", error);
-  //   }
-  //   // props.handleLoggedIn();
-  //   navigation.navigate('Home');
-
+  //   return await Parse.User.signUp(usernameValue, passwordValue)
+  //     .then((createdUser) => {
+  //       Alert.alert(
+  //         "Success!",
+  //         `User ${createdUser.get("username")} was successfully created!`
+  //         );
+  //         setIsLoggedIn(true);
+  //         navigation.navigate('Home');
+  //       return true;
+  //     })
+  //     .catch((error) => {
+  //       Alert.alert("Error!", error.message);
+  //       return false;
+  //     });
   // };
 
+  const doUserRegistration = async () => {
+    const currentUser = await Parse.User.currentAsync();
+    console.log("CURRENT USER DURING CREATION:", currentUser);
+    const user = new Parse.User();
+    user.set("username", username);
+    user.set("password", password);
+    user.set("handicap", parseInt(handicap));
+    try {
+      await user.signUp();
+      console.log("USER REGISTERED @ CreateUser", username, handicap);
+      Alert.alert(`User ${username} (${handicap}) was successfully created!`);
+      setIsLoggedIn(true);
+    } catch (error) {
+      Alert.alert(`Error!, ${error.message}`);
+      console.log("ERROR: ", error);
+    }
+    navigation.navigate("Home");
+  };
 
   return (
     <View style={styles.container}>
@@ -135,7 +131,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 8,
-    paddingVertical: 30,  
+    paddingVertical: 30,
     elevation: 4,
   },
   inputView: {
@@ -145,7 +141,6 @@ const styles = StyleSheet.create({
     height: 45,
     marginBottom: 20,
     alignItems: "center",
-    
   },
   textInput: {
     height: 50,
@@ -153,8 +148,8 @@ const styles = StyleSheet.create({
     padding: 10,
     marginLeft: 20,
     fontSize: 14,
-    color: 'black',
-    fontStyle: 'italic',
+    color: "black",
+    fontStyle: "italic",
   },
   loginText: {
     justifyContent: "center",
@@ -168,7 +163,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: 1,
     backgroundColor: "#DCDCDC",
-    fontWeight: 'bold',
+    fontWeight: "bold",
     elevation: 5,
   },
 });

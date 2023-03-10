@@ -16,19 +16,19 @@ export default function TournamentList() {
     fetchTournaments();
   }, []);
 
-  // async function enterTournament(tournament) {
-  //   const user = await Parse.User.currentAsync();
-  //   const relation = tournament.relation("players");
-  //   relation.add(user);
-  //   tournament.save().then(
-  //     () => {
-  //       Alert.alert("Success", "You have entered the tournament.");
-  //     },
-  //     (error) => {
-  //       console.error(error);
-  //     }
-  //   );
-  // }
+  async function enterTournament(tournament) {
+    const user = await Parse.User.currentAsync();
+    const relation = tournament.relation("players");
+    relation.add(user);
+    tournament.save().then(
+      () => {
+        Alert.alert("Success", "You have entered the tournament.");
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
+  }
 
   return (
     <View style={styles.container}>
