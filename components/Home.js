@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { View, Image } from "react-native";
 
 

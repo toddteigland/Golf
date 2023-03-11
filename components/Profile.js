@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Text,
   View,
@@ -6,47 +6,31 @@ import {
   TouchableOpacity,
   FlatList,
   Button,
+  Alert,
 } from "react-native";
 import Parse from "parse/react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
+import { AuthContext } from "./context/AuthContext";
 
-export default function Profile({ props, route }) {
-  const [username, setUsername] = useState("");
+export default function Profile() {
   const [handicap, setHandicap] = useState();
   const [myTournaments, setMyTournaments] = useState([]);
   const navigation = useNavigation();
-  const currentUser = username;
-  const setIsLoggedIn = route.params.setIsLoggedIn;
-
-  useEffect(() => {
-    async function getCurrentUser() {
-      const query = new Parse.Query("User");
-      const currentUser = await Parse.User.currentAsync();
-      console.log("CURRENT USER FROM PROFILE USEEFFECT: ", currentUser);
-      if (currentUser !== null) {
-        const user = await query.get(currentUser);
-        setUsername(currentUser.getUsername());
-        setHandicap(user.get("handicap"));
-      }
-    }
-    getCurrentUser();
-  }, []);
+  const { username, setUsername } = useContext(AuthContext);
 
   const handleLogout = async function () {
     return await Parse.User.logOut()
-      .then(async () => {
+    .then(async () => {
         const currentUser = await Parse.User.currentAsync();
         if (currentUser === null) {
+          setUsername(null);
           console.log(`User ${username} Logged out`);
-          setIsLoggedIn(false);
         }
-        AsyncStorage.setItem("keepLoggedIn", JSON.stringify(false));
         navigation.navigate("Home");
         return true;
       })
       .catch((error) => {
-        console.log(error);
+        console.log('Profile Error: ', error);
         return false;
       });
   };
@@ -56,9 +40,8 @@ export default function Profile({ props, route }) {
       const currentUser = await Parse.User.currentAsync();
       const query = new Parse.Query("Tournaments");
       query.equalTo("players", currentUser);
-      query.find().then(
+      query.find().then( 
         (results) => {
-          console.log("MY TOURNAMENTS:   ", results);
           setMyTournaments(results);
         },
         (error) => {
@@ -67,7 +50,21 @@ export default function Profile({ props, route }) {
       );
     }
     fetchMyTournaments();
-  }, []);
+  }, [ ]);
+
+  async function deleteTournament(tournament) {
+    const user = await Parse.User.currentAsync();
+    const relation = tournament.relation("players");
+    relation.remove(user);
+    tournament.save().then(
+      () => {
+        Alert.alert("Success", "You have Deleted the tournament.");
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -101,7 +98,12 @@ export default function Profile({ props, route }) {
               <Button
                 style={[styles.button, { flex: 0.3 }]}
                 title="Start"
-                onPress={() => enterTournament(item)}
+                onPress={() => startTournament(item)}
+              />
+              <Button
+                style={[styles.button, { flex: 0.3 }]}
+                title="Delete"
+                onPress={() => deleteTournament(item)}
               />
             </View>
           )}

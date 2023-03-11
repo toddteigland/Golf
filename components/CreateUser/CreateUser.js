@@ -1,18 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import {
   View,
   TextInput,
   Text,
   Alert,
-  Button,
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
 import Parse from "parse/react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { homeButtonStyles } from "../Buttons/buttonStyle";
-import { createUserStyle } from "./createUserStyle";
 import { useNavigation } from "@react-navigation/native";
+import { AuthContext } from "../context/AuthContext";
 
 Parse.setAsyncStorage(AsyncStorage);
 Parse.initialize(
@@ -21,51 +19,25 @@ Parse.initialize(
 );
 Parse.serverURL = "https://parseapi.back4app.com/";
 
-export default function CreateUser({ route }) {
+export default function CreateUser() {
   const navigation = useNavigation();
   const [email, setEmail] = useState("");
-  const [username, setUsername] = useState("");
+  const { username, setUsername } = useContext(AuthContext);
   const [password, setPassword] = useState("");
   const [handicap, setHandicap] = useState("");
-  const setIsLoggedIn = route.params.setIsLoggedIn;
-
-  // const doUserRegistration = async function () {
-
-  //   const usernameValue = username;
-  //   const passwordValue = password;
-  //   const handicapValue = handicap;
-
-  //   return await Parse.User.signUp(usernameValue, passwordValue)
-  //     .then((createdUser) => {
-  //       Alert.alert(
-  //         "Success!",
-  //         `User ${createdUser.get("username")} was successfully created!`
-  //         );
-  //         setIsLoggedIn(true);
-  //         navigation.navigate('Home');
-  //       return true;
-  //     })
-  //     .catch((error) => {
-  //       Alert.alert("Error!", error.message);
-  //       return false;
-  //     });
-  // };
+  const [tempUsername, setTempUsername] = useState('');
 
   const doUserRegistration = async () => {
-    const currentUser = await Parse.User.currentAsync();
-    console.log("CURRENT USER DURING CREATION:", currentUser);
     const user = new Parse.User();
-    user.set("username", username);
+    user.set("username", tempUsername);
     user.set("password", password);
     user.set("handicap", parseInt(handicap));
     try {
       await user.signUp();
-      console.log("USER REGISTERED @ CreateUser", username, handicap);
-      Alert.alert(`User ${username} (${handicap}) was successfully created!`);
-      setIsLoggedIn(true);
+      setUsername(tempUsername);
+      Alert.alert(`User ${tempUsername} (${handicap}) was successfully created!`);
     } catch (error) {
       Alert.alert(`Error!, ${error.message}`);
-      console.log("ERROR: ", error);
     }
     navigation.navigate("Home");
   };
@@ -85,8 +57,8 @@ export default function CreateUser({ route }) {
           <TextInput
             style={styles.textInput}
             value={username}
-            placeholder="Username"
-            onChangeText={(text) => setUsername(text)}
+            placeholder="Name"
+            onChangeText={(text) => setTempUsername(text)}
           />
         </View>
         <View style={styles.inputView}>

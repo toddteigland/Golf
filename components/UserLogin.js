@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,8 @@ import {
 } from "react-native";
 import Parse from "parse/react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { StackActions, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
+import { AuthContext } from "./context/AuthContext";
 
 Parse.setAsyncStorage({ AsyncStorage });
 Parse.initialize(
@@ -18,28 +19,32 @@ Parse.initialize(
 );
 Parse.serverURL = "https://parseapi.back4app.com/";
 
-export default function UserLogin({ route }) {
-  const { setIsLoggedIn } = route.params;
+export default function UserLogin() {
   const navigation = useNavigation();
-  const [username, setUsername] = useState("");
+  const { username, setUsername } = useContext(AuthContext);
   const [password, setPassword] = useState("");
   const [handicap, setHandicap] = useState("");
-
+  const [tempUsername, setTempUsername] = useState('');
+  
   const handleLogin = async function () {
-    const usernameValue = username;
+    const usernameValue = tempUsername;
     const passwordValue = password;
+    console.log('USERNAME VALUE:', usernameValue);
+    console.log('PASSWORD VALUE:', passwordValue);
 
     return await Parse.User.logIn(usernameValue, passwordValue)
-      .then(() => {
-        Alert.alert(`User ${username} has been logged in`);
-        AsyncStorage.setItem("keepLoggedIn", JSON.stringify(true));
-        setIsLoggedIn(true);
-        console.log(`${username} logged in`);
+      .then(async(loggedInUser) => {
+        const currentUser = await Parse.User.currentAsync();
+        if (currentUser === loggedInUser) {
+          setUsername(usernameValue);
+          console.log(`User ${usernameValue} Logged in`);
+          Alert.alert(`${usernameValue} has been logged in`);
+        }
         navigation.navigate("Home");
         return true;
       })
       .catch((error) => {
-        console.log(error);
+        console.log('USERLOGIN ERROR: ', error);
         Alert.alert(
           "Invalid credentials",
           "Please check your username and password and try again."
@@ -51,15 +56,13 @@ export default function UserLogin({ route }) {
     <View style={{ backgroundColor: "#282634", height: "100%" }}>
 
       <View style={styles.login}>
-        {/* <StatusBar style="auto" /> */}
         <View style={styles.inputView}>
           <TextInput
             style={styles.textInput}
             value={username}
-            placeholder={"Username"}
+            placeholder={"Name"}
             placeholderTextColor="#453f3a"
-            onChangeText={(text) => setUsername(text)}
-            autoCapitalize={"none"}
+            onChangeText={(text) => setTempUsername(text)}
             keyboardType={"email-address"}
           />
         </View>

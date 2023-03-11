@@ -11,7 +11,6 @@ export default function TournamentList() {
       const query = new Parse.Query(Tournaments);
       const results = await query.find();
       setTournaments(results);
-      console.log('Tournaments: ', results);
     }
     fetchTournaments();
   }, []);
@@ -34,7 +33,10 @@ export default function TournamentList() {
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <Text style={[styles.headerCell, { flex: 0.7 }]}>Name</Text>
-        <Text style={[styles.headerCell, { flex: 0.3 }]}>Enter Tournament</Text>
+        <Text style={[styles.headerCell, { flex: 0.7 }]}>Rounds</Text>
+        <Text style={[styles.headerCell, { flex: 0.7 }]}>Date</Text>
+        <Text style={[styles.headerCell, { flex: 0.4 }]}>Register</Text>
+
       </View>
       <FlatList
         data={tournaments}
@@ -42,9 +44,12 @@ export default function TournamentList() {
         renderItem={({ item }) => (
           <View style={styles.row}>
             <Text style={[styles.cell, { flex: 0.7 }]}>{item.get("name")}</Text>
+            <Text style={[styles.cell, { flex: 0.7 }]}>{item.get("rounds")}</Text>
+            {/* <Text style={[styles.cell, { flex: 0.7 }]}>{item.get("startDate")}</Text> */}
+
             <Button
               style={[styles.button, { flex: 0.3 }]}
-              title="Enter"
+              title="Register"
               onPress={() => enterTournament(item)}
             />
           </View>
