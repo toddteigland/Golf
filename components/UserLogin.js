@@ -22,23 +22,22 @@ Parse.serverURL = "https://parseapi.back4app.com/";
 export default function UserLogin() {
   const navigation = useNavigation();
   const { username, setUsername } = useContext(AuthContext);
+  const { handicap, setHandicap } = useContext(AuthContext);
   const [password, setPassword] = useState("");
-  const [handicap, setHandicap] = useState("");
   const [tempUsername, setTempUsername] = useState('');
   
   const handleLogin = async function () {
     const usernameValue = tempUsername;
     const passwordValue = password;
-    console.log('USERNAME VALUE:', usernameValue);
-    console.log('PASSWORD VALUE:', passwordValue);
+
 
     return await Parse.User.logIn(usernameValue, passwordValue)
       .then(async(loggedInUser) => {
         const currentUser = await Parse.User.currentAsync();
         if (currentUser === loggedInUser) {
           setUsername(usernameValue);
-          console.log(`User ${usernameValue} Logged in`);
-          Alert.alert(`${usernameValue} has been logged in`);
+          setHandicap(currentUser.get('handicap'));
+          Alert.alert(`${usernameValue}(${currentUser.get('handicap')}) has been logged in`);
         }
         navigation.navigate("Home");
         return true;

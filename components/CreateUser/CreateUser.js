@@ -24,7 +24,7 @@ export default function CreateUser() {
   const [email, setEmail] = useState("");
   const { username, setUsername } = useContext(AuthContext);
   const [password, setPassword] = useState("");
-  const [handicap, setHandicap] = useState("");
+  const { handicap, setHandicap } = useContext(AuthContext);
   const [tempUsername, setTempUsername] = useState('');
 
   const doUserRegistration = async () => {

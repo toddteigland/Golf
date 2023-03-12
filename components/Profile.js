@@ -13,10 +13,10 @@ import { useNavigation } from "@react-navigation/native";
 import { AuthContext } from "./context/AuthContext";
 
 export default function Profile() {
-  const [handicap, setHandicap] = useState();
+  const { username, setUsername } = useContext(AuthContext);
+  const { handicap, setHandicap } = useContext(AuthContext);
   const [myTournaments, setMyTournaments] = useState([]);
   const navigation = useNavigation();
-  const { username, setUsername } = useContext(AuthContext);
 
   const handleLogout = async function () {
     return await Parse.User.logOut()
@@ -24,6 +24,7 @@ export default function Profile() {
         const currentUser = await Parse.User.currentAsync();
         if (currentUser === null) {
           setUsername(null);
+          setHandicap(null);
           console.log(`User ${username} Logged out`);
         }
         navigation.navigate("Home");

@@ -26,7 +26,7 @@ const Drawer = createDrawerNavigator();
 
 export default function App() {
   const [username, setUsername] = useState(null);
-
+  const [handicap, setHandicap] = useState(null);
 
   useEffect(() => {
     async function getCurrentUser() {
@@ -43,7 +43,7 @@ export default function App() {
   }, [username]);
 
   return (
-    <AuthContext.Provider value={{ username, setUsername }}>
+    <AuthContext.Provider value={{ username, setUsername, handicap, setHandicap }}>
       <NavigationContainer>
         <Drawer.Navigator initialRouteName="Home">
           {/* ALWAYS SHOWN ------------------------------------------------------------------------------------------------------------------ */}
