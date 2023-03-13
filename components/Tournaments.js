@@ -53,7 +53,6 @@ export default function TournamentList() {
         <Text style={[styles.headerCell, { flex: 0.7 }]}>Rounds</Text>
         <Text style={[styles.headerCell, { flex: 0.7 }]}>Date</Text>
         <Text style={[styles.headerCell, { flex: 0.4 }]}>Register</Text>
-
       </View>
       <FlatList
         data={tournaments}

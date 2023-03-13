@@ -14,6 +14,7 @@ import React, { useEffect, useState } from "react";
 import UserLogin from "./components/UserLogin.js";
 import { AuthContext } from "./components/context/AuthContext";
 import { TournamentContext } from "./components/context/TournamentContext.js";
+import BottomTabNavigator from "./components/navigations/BottomTabNavigator.js";
 
 Parse.setAsyncStorage(AsyncStorage);
 Parse.initialize(
@@ -100,7 +101,7 @@ export default function App() {
                     headerTintColor: "#282634",
                   }}
                 />
-                <Drawer.Screen
+                {/* <Drawer.Screen
                   name="ScoreCard"
                   component={Scorecard}
                   options={{
@@ -109,7 +110,10 @@ export default function App() {
                     },
                     headerTintColor: "#282634",
                   }}
-                />
+                /> */}
+                <Drawer.Screen
+                  name="Tournament Name"
+                  component={BottomTabNavigator} />
               </>
             ) : (
               // --------------NOT LOGGED IN ---------------------------------------------------

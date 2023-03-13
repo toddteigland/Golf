@@ -52,6 +52,11 @@ export default function Profile() {
     );
   }
 
+
+   function startTournament(tournament) {
+    navigation.navigate('Tournament Name');
+  }
+
   async function deleteTournament(tournament) {
     const user = await Parse.User.currentAsync();
     const relation = tournament.relation("players");

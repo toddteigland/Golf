@@ -1,244 +1,152 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet, ScrollView } from "react-native";
-import { FlatList,  } from "react-native-gesture-handler";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  ScrollView,
+  FlatList
+} from "react-native";
+// import { FlatList,  } from "react-native-gesture-handler";
+// const Scorecard = ({ holes, onScoreSubmit }) => {
 
-const Scorecard = ({ holes, onScoreSubmit }) => {
-  const [scores, setScores] = useState(
-    Array.from({ length: holes }, (_, i) => ({
-      hole: i + 1,
-      score: "",
-    }))
-  );
+const Scorecard = () => {
 
-  const handleScoreChange = (value, hole) => {
-    setScores((prevScores) =>
-      prevScores.map((score) => {
-        if (score.hole === hole) {
-          return {
-            ...score,
-            score: value,
-          };
-        }
+  const holes = [
+    { number: 1, par: 4, yards: 350, handicap: 5 },
+    { number: 2, par: 5, yards: 520, handicap: 7 },
+    { number: 3, par: 3, yards: 160, handicap: 15 },
+    { number: 4, par: 4, yards: 350, handicap: 4 },
+    { number: 5, par: 4, yards: 350, handicap: 16 },
+    { number: 6, par: 3, yards: 160, handicap: 11 },
+    { number: 7, par: 5, yards: 520, handicap: 10 },
+    { number: 8, par: 4, yards: 350, handicap: 9 },
+    { number: 9, par: 4, yards: 350, handicap: 1 },
+    { number: 10, par: 5, yards: 520, handicap: 2 },
+    { number: 11, par: 4, yards: 350, handicap: 8 },
+    { number: 12, par: 4, yards: 350, handicap: 17 },
+    { number: 13, par: 5, yards: 520, handicap: 14 },
+    { number: 14, par: 4, yards: 350, handicap: 6 },
+    { number: 15, par: 5, yards: 520, handicap: 3 },
+    { number: 16, par: 3, yards: 160, handicap: 12 },
+    { number: 17, par: 4, yards: 350, handicap: 13 },
+    { number: 18, par: 3, yards: 160, handicap: 18 },
+  ];
 
-        return score;
-      })
-    );
+  const [totalScore, setTotalScore] = useState(0);
+  const [scores, setScores] = useState(holes.map(hole => ({ score: null })));
+
+
+  const handleScoreChange = (index, value) => {
+    const newScores = [...scores];
+    newScores[index].score = parseInt(value) || null;
+    setScores(newScores);
+    calculateTotalScore(newScores);
   };
 
-  const handleSubmit = () => {
-    // Calculate total score
-    const totalScore = scores.reduce(
-      (acc, score) => acc + Number(score.score),
-      0
-    );
-
-    // Call onScoreSubmit callback with total score and scores array
-    onScoreSubmit(totalScore, scores);
+  const calculateTotalScore = (newScores) => {
+    let total = 0;
+    newScores.forEach((score) => {
+      total += score.score || 0;
+    });
+    setTotalScore(total);
   };
 
-  return (
-    <ScrollView style={styles.scrollview}>
-      <View style={styles.table}>
-        <View style={styles.hole}>
-          <Text style={styles.headerText}>Hole</Text>
-          {Array.from({ length: holes }, (_, i) => (
-            <Text key={i} style={styles.headerText}>
-              {i + 1}
-            </Text>
-          ))}
-        </View>
-        <View style={styles.par}>
-        <Text style={styles.label}>Par</Text>
 
+return (
+  <View style={styles.container}>
+    <View style={styles.header}>
+      <Text style={styles.headerText}>Hole</Text>
+      <Text style={styles.headerText}>Par</Text>
+      <Text style={styles.headerText}>Yards</Text>
+      <Text style={styles.headerText}>Handicap</Text>
+      <Text style={styles.headerText}>Score</Text>
+    </View>
+    <FlatList
+      data={holes}
+      renderItem={({ item }) => (
+        <View style={styles.row}>
+          <Text style={styles.rowText}>{item.number}</Text>
+          <Text style={styles.rowText}>{item.par}</Text>
+          <Text style={styles.rowText}>{item.yards}</Text>
+          <Text style={styles.rowText}>{item.handicap}</Text>
+          <TextInput
+            style={styles.input}
+            keyboardType="numeric"
+            onChangeText={(value) => handleScoreChange(item.number, value)}
+          />
         </View>
-        <View style={styles.par}>
-        <Text style={styles.label}>Yrds</Text>
-
-        </View>
-        <View style={styles.par}>
-        <Text style={styles.label}>Handicap</Text>
-
-        </View>
-        <View style={styles.score}>
-          <Text style={styles.label}>Score</Text>
-          {scores.map((score) => (
-            <TextInput
-              key={score.hole}
-              style={styles.input}
-              keyboardType="number-pad"
-              value={score.score}
-              onChangeText={(value) => handleScoreChange(value, score.hole)}
-            />
-          ))}
-        </View>
-      </View>
-      <View>
-        <Button title="Submit Score" onPress={handleSubmit} />
-      </View>
-      <View style={{height: 50}} />
-    </ScrollView>
-  );
-};
+      )}
+      keyExtractor={(item) => item.number.toString()}
+      style={styles.list}
+    />
+    <View style={styles.total}>
+      <Text style={styles.totalText}>Total:</Text>
+      <Text style={styles.totalText}>{totalScore}</Text>
+    </View>
+  </View>
+);
+}
 
 const styles = StyleSheet.create({
-  scrollview: {
-    height: 500,
-  },  
-  table: {
+  container: {
     flex: 1,
-    flexDirection: "row",
-    backgroundColor: "#fff",
-    borderRadius: 8,
+    padding: 16,
     elevation: 4,
-    borderColor: "goldenrod",
-    borderWidth: 3,
-    minHeight: 600,
+    backgroundColor: "#fff",
+
   },
-  hole: {
-    flexDirection: "column",
-    justifyContent: "space-between",
-    paddingVertical: 10,
-    paddingHorizontal: 5,
-    backgroundColor: "#eee",
-  },
-  score: {
-    flexDirection: "column",
-    justifyContent: "space-between",
+  header: {
+    flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 10,
-    paddingHorizontal: 5,
-    borderColor: "black",
-    borderWidth: 1,
-  },
-  par: {
-    flexDirection: 'column',
     justifyContent: "space-between",
+    backgroundColor: "#DCDCDC",
+    borderRadius: 8,
     paddingVertical: 10,
-    paddingHorizontal: 5,
-    backgroundColor: "#eee",
-    borderColor: 'black',
-    borderWidth: 1,
+    paddingHorizontal: 16,
+    marginBottom: 8,
   },
   headerText: {
+    flex: 0.6,
+    textAlign: "left",
     fontWeight: "bold",
-    fontSize: 18,
-    textAlign: "center",
   },
-  label: {
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+
+  },  
+  rowText: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  total: {
+    alignContent: 'flex-end',
+  },
+  holeNumber: {
+    fontSize: 16,
     fontWeight: "bold",
-    fontSize: 18,
+  },
+  holePar: {
+    fontSize: 16,
+  },
+  holeYards: {
+    fontSize: 16,
+  },
+  holeHandicap: {
+    fontSize: 16,
   },
   input: {
+    width: 50,
+    height: 40,
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 5,
-    padding: 5,
-    width: 50,
-    textAlign: "center",
+    paddingLeft: 8,
   },
 });
-
 export default Scorecard;
-
-// const Leaderboard = ({ players }) => {
-//   const [loaded, setLoaded] = useState(false);
-//   const [error, setError] = useState(null);
-//   const [players, setPlayers] = useState([]);
-
-//   useEffect(() => {
-//     async function fetchPlayers() {
-//       try {
-//         const response = await fetch('https://api.example.com/players');
-//         const data = await response.json();
-//         setPlayers(data);
-//         setLoaded(true);
-//       } catch (error) {
-//         setError(error);
-//         setLoaded(true);
-//       }
-//     }
-
-//     fetchPlayers();
-//   }, []);
-
-//   if (!loaded) {
-//     return (
-//       <View style={styles.container}>
-//         <Text>Loading players...</Text>
-//       </View>
-//     );
-//   }
-
-//   if (error) {
-//     return (
-//       <View style={styles.container}>
-//         <Text>Error loading players: {error.message}</Text>
-//       </View>
-//     );
-//   }
-
-//   if (players.length === 0) {
-//     return (
-//       <View style={styles.container}>
-//         <Text>No players found</Text>
-//       </View>
-//     );
-//   }
-
-//   const sortedPlayers = players.sort((a, b) => a.totalScore - b.totalScore);
-
-//   return (
-//     <View style={styles.container}>
-//       <View style={styles.header}>
-//         <Text style={styles.headerText}>Leaderboard</Text>
-//       </View>
-//       <ScrollView style={styles.scrollView}>
-//         {sortedPlayers.map((player, index) => (
-//           <View style={styles.row} key={player.id}>
-//             <Text style={styles.label}>{index + 1}</Text>
-//             <Text style={styles.label}>{player.name}</Text>
-//             <Text style={styles.label}>{player.totalScore}</Text>
-//           </View>
-//         ))}
-//       </ScrollView>
-//     </View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: "#fff",
-//     padding: 20,
-//   },
-//   header: {
-//     flexDirection: "row",
-//     justifyContent: "space-between",
-//     marginBottom: 20,
-//   },
-//   headerText: {
-//     fontSize: 24,
-//     fontWeight: "bold",
-//   },
-//   scrollView: {
-//     flex: 1,
-//   },
-//   row: {
-//     flexDirection: "row",
-//     justifyContent: "space-between",
-//     marginBottom: 10,
-//   },
-//   label: {
-//     fontSize: 18,
-//     fontWeight: "bold",
-//   },
-//   input: {
-//     fontSize: 18,
-//     borderBottomWidth: 1,
-//     borderColor: "#ccc",
-//     padding: 5,
-//     textAlign: "center",
-//   },
-// });
-
-// export { Scorecard };
