@@ -1,4 +1,3 @@
-
 import { registerRootComponent } from "expo";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -66,17 +65,14 @@ export default function App() {
     >
       <TournamentContext.Provider value={{ myTournaments, setMyTournaments }}>
         <NavigationContainer>
-          <Drawer.Navigator initialRouteName="Home">
+          <Drawer.Navigator initialRouteName="Home" screenOptions={{headerStyle: {
+                  backgroundColor: "#DCDCDC",
+                },
+                headerTintColor: "#282634",}}>
             {/* ALWAYS SHOWN ------------------------------------------------------------------------------------------------------------------ */}
             <Drawer.Screen
               name="Home"
               component={Home}
-              options={{
-                headerStyle: {
-                  backgroundColor: "#DCDCDC",
-                },
-                headerTintColor: "#282634",
-              }}
             />
             {/* ONLY IF LOGGED IN ------------------------------------------------------------------------------------------------------------ */}
             {username ? (
@@ -84,32 +80,14 @@ export default function App() {
                 <Drawer.Screen
                   name="Profile"
                   component={Profile}
-                  options={{
-                    headerStyle: {
-                      backgroundColor: "#DCDCDC",
-                    },
-                    headerTintColor: "#282634",
-                  }}
                 />
                 <Drawer.Screen
                   name="Tournaments"
                   component={TournamentList}
-                  options={{
-                    headerStyle: {
-                      backgroundColor: "#DCDCDC",
-                    },
-                    headerTintColor: "#282634",
-                  }}
                 />
                 {/* <Drawer.Screen
                   name="ScoreCard"
                   component={Scorecard}
-                  options={{
-                    headerStyle: {
-                      backgroundColor: "#DCDCDC",
-                    },
-                    headerTintColor: "#282634",
-                  }}
                 /> */}
                 <Drawer.Screen
                   name="Tournament Name"
@@ -121,22 +99,10 @@ export default function App() {
                 <Drawer.Screen
                   name="Login"
                   component={UserLogin}
-                  options={{
-                    headerStyle: {
-                      backgroundColor: "#DCDCDC",
-                    },
-                    headerTintColor: "#282634",
-                  }}
                 />
                 <Drawer.Screen
                   name="Create User"
                   component={CreateUser}
-                  options={{
-                    headerStyle: {
-                      backgroundColor: "#DCDCDC",
-                    },
-                    headerTintColor: "#282634",
-                  }}
                 />
               </>
             )}

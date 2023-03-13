@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { TournamentContext } from "./context/TournamentContext";
 import Parse from "parse/react-native";
+import { ScrollView } from "react-native-gesture-handler";
 
 const Leaderboard = () => {
   const { myTournaments } = useContext(TournamentContext);
@@ -44,36 +45,38 @@ const Leaderboard = () => {
   // }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.row}>
-        <View style={styles.column}>
-          <Text style={styles.header}>Player</Text>
-        </View>
-        {[...Array(18)].map((_, i) => (
-          <View style={styles.column} key={`hole${i + 1}`}>
-            <Text style={styles.header}>{i + 1}</Text>
-          </View>
-        ))}
-        <View style={styles.column}>
-          <Text style={styles.header}>Total</Text>
-        </View>
-      </View>
-      {players.map((player) => (
-        <View style={styles.row} key={player.name}>
+    <ScrollView horizontal>
+      <View style={styles.container}>
+        <View style={styles.row}>
           <View style={styles.column}>
-            <Text style={styles.playerName}>{player.name}</Text>
+            <Text style={styles.header}>Player</Text>
           </View>
-          {player.holeScores.map((score, index) => (
-            <View style={styles.column} key={`score${index}`}>
-              <Text style={styles.score}>{score}</Text>
+          {[...Array(18)].map((_, i) => (
+            <View style={styles.column} key={`hole${i + 1}`}>
+              <Text style={styles.header}>{i + 1}</Text>
             </View>
           ))}
           <View style={styles.column}>
-            <Text style={styles.score}>{player.totalScore}</Text>
+            <Text style={styles.header}>Total</Text>
           </View>
         </View>
-      ))}
-    </View>
+        {players.map((player) => (
+          <View style={styles.row} key={player.name}>
+            <View style={styles.column}>
+              <Text style={styles.playerName}>{player.name}</Text>
+            </View>
+            {player.holeScores.map((score, index) => (
+              <View style={styles.column} key={`score${index}`}>
+                <Text style={styles.score}>{score}</Text>
+              </View>
+            ))}
+            <View style={styles.column}>
+              <Text style={styles.score}>{player.totalScore}</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+    </ScrollView>
   );
 };
 
@@ -103,6 +106,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginRight: 10,
   },
-})
+});
 
 export default Leaderboard;
