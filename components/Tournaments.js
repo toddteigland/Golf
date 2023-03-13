@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { View, Text, Button, Alert, FlatList, StyleSheet } from "react-native";
 import Parse from "parse/react-native";
+import { TournamentContext } from "./context/TournamentContext";
 
 export default function TournamentList() {
   const [tournaments, setTournaments] = useState([]);
+  const { myTournaments, setMyTournaments } = useContext(TournamentContext);
 
   useEffect(() => {
     async function fetchTournaments() {
@@ -15,12 +17,27 @@ export default function TournamentList() {
     fetchTournaments();
   }, []);
 
+  async function fetchMyTournaments() {
+    const currentUser = await Parse.User.currentAsync();
+    const query = new Parse.Query("Tournaments");
+    query.equalTo("players", currentUser);
+    query.find().then(
+      (results) => {
+        setMyTournaments(results);
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
+  }
+
   async function enterTournament(tournament) {
     const user = await Parse.User.currentAsync();
     const relation = tournament.relation("players");
     relation.add(user);
     tournament.save().then(
       () => {
+        fetchMyTournaments()
         Alert.alert("Success", "You have entered the tournament.");
       },
       (error) => {
@@ -43,8 +60,8 @@ export default function TournamentList() {
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.row}>
-            <Text style={[styles.cell, { flex: 0.7 }]}>{item.get("name")}</Text>
-            <Text style={[styles.cell, { flex: 0.7 }]}>{item.get("rounds")}</Text>
+            <Text style={[styles.cell, { flex: 0.7 }]}>{item.get("name") +""}</Text>
+            <Text style={[styles.cell, { flex: 0.7 }]}>{item.get("rounds") +""}</Text>
             {/* <Text style={[styles.cell, { flex: 0.7 }]}>{item.get("startDate")}</Text> */}
 
             <Button

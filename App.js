@@ -1,3 +1,4 @@
+
 import { registerRootComponent } from "expo";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -9,9 +10,10 @@ import TournamentList from "./components/Tournaments.js";
 import Scorecard from "./components/Scorecard.js";
 import Parse from "parse/react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useEffect, useState } from "react";
-import UserLogin from "./components/UserLogin.js";  
+import React, { useEffect, useState } from "react";
+import UserLogin from "./components/UserLogin.js";
 import { AuthContext } from "./components/context/AuthContext";
+import { TournamentContext } from "./components/context/TournamentContext.js";
 
 Parse.setAsyncStorage(AsyncStorage);
 Parse.initialize(
@@ -23,103 +25,120 @@ Parse.serverURL = "https://parseapi.back4app.com/";
 // const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
-
 export default function App() {
   const [username, setUsername] = useState(null);
   const [handicap, setHandicap] = useState(null);
+  const [myTournaments, setMyTournaments] = useState([]);
 
   useEffect(() => {
     async function getCurrentUser() {
       const query = new Parse.Query("User");
       const currentUser = await Parse.User.currentAsync();
-      console.log("CURRENT USER FROM APP USEEFFECT: ", currentUser);
       if (currentUser !== null) {
         const user = await query.get(currentUser);
         setUsername(currentUser.getUsername());
-        // setHandicap(user.get("handicap"));
       }
     }
     getCurrentUser();
   }, [username]);
 
+  useEffect(() => {
+    async function fetchMyTournaments() {
+      const currentUser = await Parse.User.currentAsync();
+      const query = new Parse.Query("Tournaments");
+      query.equalTo("players", currentUser);
+      query.find().then(
+        (results) => {
+          setMyTournaments(results);
+        },
+        (error) => {
+          console.error(error);
+        }
+      );
+    }
+    fetchMyTournaments();
+  }, [myTournaments.length]);
+
   return (
-    <AuthContext.Provider value={{ username, setUsername, handicap, setHandicap }}>
-      <NavigationContainer>
-        <Drawer.Navigator initialRouteName="Home">
-          {/* ALWAYS SHOWN ------------------------------------------------------------------------------------------------------------------ */}
-          <Drawer.Screen
-            name="Home"
-            component={Home}
-            options={{
-              headerStyle: {
-                backgroundColor: "#DCDCDC",
-              },
-              headerTintColor: "#282634",
-            }}
-          />
-          {/* ONLY IF LOGGED IN ------------------------------------------------------------------------------------------------------------ */}
-          {username ? (
-            <>
-              <Drawer.Screen
-                name="Profile"
-                component={Profile}
-                options={{
-                  headerStyle: {
-                    backgroundColor: "#DCDCDC",
-                  },
-                  headerTintColor: "#282634",
-                }}
+    <AuthContext.Provider
+      value={{ username, setUsername, handicap, setHandicap }}
+    >
+      <TournamentContext.Provider value={{ myTournaments, setMyTournaments }}>
+        <NavigationContainer>
+          <Drawer.Navigator initialRouteName="Home">
+            {/* ALWAYS SHOWN ------------------------------------------------------------------------------------------------------------------ */}
+            <Drawer.Screen
+              name="Home"
+              component={Home}
+              options={{
+                headerStyle: {
+                  backgroundColor: "#DCDCDC",
+                },
+                headerTintColor: "#282634",
+              }}
+            />
+            {/* ONLY IF LOGGED IN ------------------------------------------------------------------------------------------------------------ */}
+            {username ? (
+              <>
+                <Drawer.Screen
+                  name="Profile"
+                  component={Profile}
+                  options={{
+                    headerStyle: {
+                      backgroundColor: "#DCDCDC",
+                    },
+                    headerTintColor: "#282634",
+                  }}
                 />
-              <Drawer.Screen
-                name="Tournaments"
-                component={TournamentList}
-                options={{
-                  headerStyle: {
-                    backgroundColor: "#DCDCDC",
-                  },
-                  headerTintColor: "#282634",
-                }}
+                <Drawer.Screen
+                  name="Tournaments"
+                  component={TournamentList}
+                  options={{
+                    headerStyle: {
+                      backgroundColor: "#DCDCDC",
+                    },
+                    headerTintColor: "#282634",
+                  }}
                 />
-              <Drawer.Screen
-                name="ScoreCard"
-                component={Scorecard}
-                options={{
-                  headerStyle: {
-                    backgroundColor: "#DCDCDC",
-                  },
-                  headerTintColor: "#282634",
-                }}
+                <Drawer.Screen
+                  name="ScoreCard"
+                  component={Scorecard}
+                  options={{
+                    headerStyle: {
+                      backgroundColor: "#DCDCDC",
+                    },
+                    headerTintColor: "#282634",
+                  }}
                 />
-            </>
-          ) : (
-
-  // --------------NOT LOGGED IN ---------------------------------------------------
-            <>
-              <Drawer.Screen
-                name="Login"
-                component={UserLogin}
-                options={{
-                  headerStyle: {
-                    backgroundColor: "#DCDCDC",
-                  },
-                  headerTintColor: "#282634",
-                }}
-              />
-              <Drawer.Screen
-                name="Create User"
-                component={CreateUser}
-                options={{
-                  headerStyle: {
-                    backgroundColor: "#DCDCDC",
-                  },
-                  headerTintColor: "#282634",
-                }}
+              </>
+            ) : (
+              // --------------NOT LOGGED IN ---------------------------------------------------
+              <>
+                <Drawer.Screen
+                  name="Login"
+                  component={UserLogin}
+                  options={{
+                    headerStyle: {
+                      backgroundColor: "#DCDCDC",
+                    },
+                    headerTintColor: "#282634",
+                  }}
                 />
-            </>
-          )}
-
-        </Drawer.Navigator>
-      </NavigationContainer>
+                <Drawer.Screen
+                  name="Create User"
+                  component={CreateUser}
+                  options={{
+                    headerStyle: {
+                      backgroundColor: "#DCDCDC",
+                    },
+                    headerTintColor: "#282634",
+                  }}
+                />
+              </>
+            )}
+          </Drawer.Navigator>
+        </NavigationContainer>
+      </TournamentContext.Provider>
     </AuthContext.Provider>
   );
 }

@@ -11,16 +11,18 @@ import {
 import Parse from "parse/react-native";
 import { useNavigation } from "@react-navigation/native";
 import { AuthContext } from "./context/AuthContext";
+import { TournamentContext } from "./context/TournamentContext";
+// import { fetchMyTournaments } from "./helpers/fetchMyTournaments";
 
 export default function Profile() {
   const { username, setUsername } = useContext(AuthContext);
   const { handicap, setHandicap } = useContext(AuthContext);
-  const [myTournaments, setMyTournaments] = useState([]);
+  const { myTournaments, setMyTournaments } = useContext(TournamentContext);
   const navigation = useNavigation();
 
   const handleLogout = async function () {
     return await Parse.User.logOut()
-    .then(async () => {
+      .then(async () => {
         const currentUser = await Parse.User.currentAsync();
         if (currentUser === null) {
           setUsername(null);
@@ -31,27 +33,24 @@ export default function Profile() {
         return true;
       })
       .catch((error) => {
-        console.log('Profile Error: ', error);
+        console.log("Profile Error: ", error);
         return false;
       });
   };
 
-  useEffect(() => {
-    async function fetchMyTournaments() {
-      const currentUser = await Parse.User.currentAsync();
-      const query = new Parse.Query("Tournaments");
-      query.equalTo("players", currentUser);
-      query.find().then( 
-        (results) => {
-          setMyTournaments(results);
-        },
-        (error) => {
-          console.error(error);
-        }
-      );
-    }
-    fetchMyTournaments();
-  }, [ ]);
+  async function fetchMyTournaments() {
+    const currentUser = await Parse.User.currentAsync();
+    const query = new Parse.Query("Tournaments");
+    query.equalTo("players", currentUser);
+    query.find().then(
+      (results) => {
+        setMyTournaments(results);
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
+  }
 
   async function deleteTournament(tournament) {
     const user = await Parse.User.currentAsync();
@@ -59,6 +58,7 @@ export default function Profile() {
     relation.remove(user);
     tournament.save().then(
       () => {
+        fetchMyTournaments();
         Alert.alert("Success", "You have Deleted the tournament.");
       },
       (error) => {
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   myTournaments: {
-    backgroundColor: '#DCDCDC',
+    backgroundColor: "#DCDCDC",
     marginTop: 20,
     padding: 12,
   },
