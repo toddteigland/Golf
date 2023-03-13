@@ -33,7 +33,7 @@ const BottomTabNavigator = () => {
             iconName = iconLeaderboard;
           }
           return (
-            <Image source={iconName} style={{ width: 20, height: 20 }} />
+            <Image source={iconName} style={{ width: 25, height: 25 }} />
           );
         },
       })}
