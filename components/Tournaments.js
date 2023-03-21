@@ -2,10 +2,12 @@ import React, { useState, useEffect, useContext } from "react";
 import { View, Text, Button, Alert, FlatList, StyleSheet } from "react-native";
 import Parse from "parse/react-native";
 import { TournamentContext } from "./context/TournamentContext";
+import { useNavigation } from "@react-navigation/native";
 
 export default function TournamentList() {
   const [tournaments, setTournaments] = useState([]);
   const { myTournaments, setMyTournaments } = useContext(TournamentContext);
+  const navigation = useNavigation();
 
   useEffect(() => {
     async function fetchTournaments() {
@@ -39,12 +41,14 @@ export default function TournamentList() {
       () => {
         fetchMyTournaments()
         Alert.alert("Success", "You have entered the tournament.");
+        navigation.navigate('Profile');
       },
       (error) => {
         console.error(error);
       }
     );
   }
+
 
   return (
     <View style={styles.container}>
@@ -109,18 +113,18 @@ const styles = StyleSheet.create({
     borderBottomColor: "#333",
     marginBottom: 8,
   },
-  cell: {
-    flex: 0.7,
-    textAlign: "left",
-  },
-  button: {
-    backgroundColor: "#007AFF",
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
+  // cell: {
+  //   flex: 0.7,
+  //   textAlign: "left",
+  // },
+  // button: {
+  //   backgroundColor: "#007AFF",
+  //   borderRadius: 8,
+  //   paddingVertical: 8,
+  //   paddingHorizontal: 16,
+  // },
+  // buttonText: {
+  //   color: "#ff4057",
+  //   fontWeight: "bold",
+  // },
 })

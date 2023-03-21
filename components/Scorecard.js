@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,37 +6,43 @@ import {
   Button,
   StyleSheet,
   ScrollView,
-  FlatList
+  FlatList,
+  LogBox,
 } from "react-native";
+import { TournamentContext } from "./context/TournamentContext";
+import Parse from "parse/react-native";
+
 // import { FlatList,  } from "react-native-gesture-handler";
 // const Scorecard = ({ holes, onScoreSubmit }) => {
 
 const Scorecard = () => {
-
-  const holes = [
-    { number: 1, par: 4, yards: 350, handicap: 5 },
-    { number: 2, par: 5, yards: 520, handicap: 7 },
-    { number: 3, par: 3, yards: 160, handicap: 15 },
-    { number: 4, par: 4, yards: 350, handicap: 4 },
-    { number: 5, par: 4, yards: 350, handicap: 16 },
-    { number: 6, par: 3, yards: 160, handicap: 11 },
-    { number: 7, par: 5, yards: 520, handicap: 10 },
-    { number: 8, par: 4, yards: 350, handicap: 9 },
-    { number: 9, par: 4, yards: 350, handicap: 1 },
-    { number: 10, par: 5, yards: 520, handicap: 2 },
-    { number: 11, par: 4, yards: 350, handicap: 8 },
-    { number: 12, par: 4, yards: 350, handicap: 17 },
-    { number: 13, par: 5, yards: 520, handicap: 14 },
-    { number: 14, par: 4, yards: 350, handicap: 6 },
-    { number: 15, par: 5, yards: 520, handicap: 3 },
-    { number: 16, par: 3, yards: 160, handicap: 12 },
-    { number: 17, par: 4, yards: 350, handicap: 13 },
-    { number: 18, par: 3, yards: 160, handicap: 18 },
-  ];
-
   const [totalScore, setTotalScore] = useState(0);
-  const [scores, setScores] = useState(holes.map(hole => ({ score: null })));
+  const { teebox, setteebox } = useContext(TournamentContext);
+  const [yardages, setYardages] = useState([]);
+  const [holes, setHoles] = useState([]);
+  const [par, setPar] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const Tee = Parse.Object.extend("Tee");
+    const teeQuery = new Parse.Query(Tee);
+    teeQuery.equalTo("name", teebox);
+    teeQuery.first()
+      .then((tee) => {
+        const yardages = tee.get("hole_yardages");
+        const holes = tee.get("holes");
+        const par = tee.get("hole_par");
+        setYardages(yardages);
+        setHoles(holes);
+        setPar(par);
+      })
+      .catch((error) => {
+        console.log("SET TEE ERROR: ", error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [teebox]);
 
   const handleScoreChange = (index, value) => {
     const newScores = [...scores];
@@ -53,41 +59,39 @@ const Scorecard = () => {
     setTotalScore(total);
   };
 
+  if (loading) {
+    return <Text>Loading...</Text>;
+  }
 
-return (
-  <View style={styles.container}>
-    <View style={styles.header}>
-      <Text style={styles.headerText}>Hole</Text>
-      <Text style={styles.headerText}>Par</Text>
-      <Text style={styles.headerText}>Yards</Text>
-      <Text style={styles.headerText}>Handicap</Text>
-      <Text style={styles.headerText}>Score</Text>
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Hole</Text>
+        <Text style={styles.headerText}>Par</Text>
+        <Text style={styles.headerText}>Yards</Text>
+        <Text style={styles.headerText}>Score</Text>
+      </View>
+      <ScrollView style={styles.list}>
+        {holes.map((hole, index) => (
+          <View key={index} style={styles.row}>
+            <Text style={styles.holeNumber}>{index + 1}</Text>
+            <Text style={styles.holePar}>{par[index]}</Text>
+            <Text style={styles.holeYards}>{yardages[index]}</Text>
+            <TextInput
+              style={styles.input}
+              keyboardType="numeric"
+              onChangeText={(value) => handleScoreChange(index, value)}
+            />
+          </View>
+        ))}
+      </ScrollView>
+      <View style={styles.total}>
+        <Text style={styles.totalText}>Total:</Text>
+        <Text style={styles.totalText}>{totalScore}</Text>
+      </View>
     </View>
-    <FlatList
-      data={holes}
-      renderItem={({ item }) => (
-        <View style={styles.row}>
-          <Text style={styles.rowText}>{item.number}</Text>
-          <Text style={styles.rowText}>{item.par}</Text>
-          <Text style={styles.rowText}>{item.yards}</Text>
-          <Text style={styles.rowText}>{item.handicap}</Text>
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            onChangeText={(value) => handleScoreChange(item.number, value)}
-          />
-        </View>
-      )}
-      keyExtractor={(item) => item.number.toString()}
-      style={styles.list}
-    />
-    <View style={styles.total}>
-      <Text style={styles.totalText}>Total:</Text>
-      <Text style={styles.totalText}>{totalScore}</Text>
-    </View>
-  </View>
-);
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -95,7 +99,8 @@ const styles = StyleSheet.create({
     padding: 16,
     elevation: 4,
     backgroundColor: "#fff",
-
+    borderColor: 'grey',
+    borderWidth: 2,
   },
   header: {
     flexDirection: "row",
@@ -113,11 +118,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-
-  },  
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
   rowText: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -125,7 +129,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   total: {
-    alignContent: 'flex-end',
+    alignContent: "flex-end",
   },
   holeNumber: {
     fontSize: 16,
@@ -148,5 +152,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     paddingLeft: 8,
   },
+  list: {
+    
+  }
 });
+
 export default Scorecard;

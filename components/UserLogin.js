@@ -24,26 +24,29 @@ export default function UserLogin() {
   const { username, setUsername } = useContext(AuthContext);
   const { handicap, setHandicap } = useContext(AuthContext);
   const [password, setPassword] = useState("");
-  const [tempUsername, setTempUsername] = useState('');
-  
+  const [tempUsername, setTempUsername] = useState("");
+
   const handleLogin = async function () {
     const usernameValue = tempUsername;
     const passwordValue = password;
 
-
     return await Parse.User.logIn(usernameValue, passwordValue)
-      .then(async(loggedInUser) => {
+      .then(async (loggedInUser) => {
         const currentUser = await Parse.User.currentAsync();
         if (currentUser === loggedInUser) {
           setUsername(usernameValue);
-          setHandicap(currentUser.get('handicap'));
-          Alert.alert(`${usernameValue}(${currentUser.get('handicap')}) has been logged in`);
+          setHandicap(currentUser.get("handicap"));
+          Alert.alert(
+            `${usernameValue}(${currentUser.get(
+              "handicap"
+            )}) has been logged in`
+          );
         }
         navigation.navigate("Home");
         return true;
       })
       .catch((error) => {
-        console.log('USERLOGIN ERROR: ', error);
+        console.log("USERLOGIN ERROR: ", error);
         Alert.alert(
           "Invalid credentials",
           "Please check your username and password and try again."
@@ -53,93 +56,46 @@ export default function UserLogin() {
 
   return (
     <View style={{ backgroundColor: "#282634", height: "100%" }}>
+      <View style={styles.container}>
 
-      <View style={styles.login}>
-        <View style={styles.inputView}>
-          <TextInput
-            style={styles.textInput}
-            value={username}
-            placeholder={"Name"}
-            placeholderTextColor="#453f3a"
-            onChangeText={(text) => setTempUsername(text)}
-            keyboardType={"email-address"}
-          />
+        <View style={styles.login}>
+          <View style={styles.inputView}>
+            <TextInput
+              style={styles.textInput}
+              value={username}
+              placeholder={"Name"}
+              placeholderTextColor="#453f3a"
+              onChangeText={(text) => setTempUsername(text)}
+              keyboardType={"email-address"}
+            />
+          </View>
+
+          <View style={styles.inputView}>
+            <TextInput
+              style={styles.textInput}
+              value={password}
+              placeholder={"Password"}
+              placeholderTextColor="#453f3a"
+              secureTextEntry
+              onChangeText={(text) => setPassword(text)}
+            />
+          </View>
+
+          <TouchableOpacity>
+            <Text style={styles.forgot_button}>Forgot Password?</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
+            <Text style={styles.loginText}>LOGIN</Text>
+          </TouchableOpacity>
+          
         </View>
-
-        <View style={styles.inputView}>
-          <TextInput
-            style={styles.textInput}
-            value={password}
-            placeholder={"Password"}
-            placeholderTextColor="#453f3a"
-            secureTextEntry
-            onChangeText={(text) => setPassword(text)}
-          />
-        </View>
-
-        <TouchableOpacity>
-          <Text style={styles.forgot_button}>Forgot Password?</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
-          <Text style={styles.loginText}>LOGIN</Text>
-        </TouchableOpacity>
       </View>
-      
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  logout: {
-    position: "absolute",
-    top: 10,
-    right: 0,
-    backgroundColor: "#DCDCDC",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderTopLeftRadius: 8,
-    borderBottomLeftRadius: 8,
-    elevation: 4,
-  },
-  tourny: {
-    position: "relative",
-    marginTop: 60,
-    minHeight: 250,
-  },
-  notLoggedInContainer: {
-    flex: 1,
-    minHeight: "100%",
-    // borderColor: 'gold',
-    // borderWidth: 3,
-  },
-  login: {},
-  firstTimer: {
-    // marginLeft: 250,
-    marginTop: 200,
-    width: "100%",
-    backgroundColor: "#ff4057",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 8,
-    paddingVertical: 30,
-    elevation: 4,
-  },
-  scorecard: {
-    minHeight: 300,
-  },
-
-  createUserButton: {
-    width: 200,
-    borderRadius: 25,
-    height: 50,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 10,
-    backgroundColor: "#DCDCDC",
-    color: "black",
-    elevation: 4,
-  },
   container: {
     marginVertical: 16,
     marginHorizontal: 8,

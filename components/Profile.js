@@ -17,7 +17,9 @@ import { TournamentContext } from "./context/TournamentContext";
 export default function Profile() {
   const { username, setUsername } = useContext(AuthContext);
   const { handicap, setHandicap } = useContext(AuthContext);
+  const { currentTournament, setCurrentTournament } = useContext(TournamentContext);
   const { myTournaments, setMyTournaments } = useContext(TournamentContext);
+  const { teebox, setTeebox } = useContext(TournamentContext);
   const navigation = useNavigation();
 
   const handleLogout = async function () {
@@ -52,10 +54,12 @@ export default function Profile() {
     );
   }
 
-
-   function startTournament(tournament) {
-    navigation.navigate('Tournament Name');
+  function startTournament(tournament) {
+    setCurrentTournament(tournament)
+    // showAlert();
+    navigation.navigate('Play Sandbagger');
   }
+
 
   async function deleteTournament(tournament) {
     const user = await Parse.User.currentAsync();
@@ -64,7 +68,7 @@ export default function Profile() {
     tournament.save().then(
       () => {
         fetchMyTournaments();
-        Alert.alert("Success", "You have Deleted the tournament.");
+        Alert.alert("Success", "You have Left the tournament.");
       },
       (error) => {
         console.error(error);
@@ -86,7 +90,10 @@ export default function Profile() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.myTournaments}>
+      <View style={styles.myTournamentsContainer}>
+        <View>
+          <Text style={styles.Header}>My Tournaments </Text>
+        </View>
         <View style={styles.headerRow}>
           <Text style={[styles.headerCell, { flex: 0.7 }]}>Name</Text>
           <Text style={[styles.headerCell, { flex: 0.3 }]}>
@@ -98,19 +105,21 @@ export default function Profile() {
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <View style={styles.row}>
-              <Text style={[styles.cell, { flex: 0.7 }]}>
+              <Text style={[styles.name, { flex: 0.7 }]}>
                 {item.get("name")}
               </Text>
-              <Button
+              <TouchableOpacity
                 style={[styles.button, { flex: 0.3 }]}
-                title="Start"
-                onPress={() => startTournament(item)}
-              />
-              <Button
+                onPress={() => startTournament(item)} >
+                  <Text>Start</Text>
+               </TouchableOpacity>
+
+              <TouchableOpacity
                 style={[styles.button, { flex: 0.3 }]}
-                title="Delete"
                 onPress={() => deleteTournament(item)}
-              />
+              >
+                <Text>Leave</Text>
+              </TouchableOpacity>
             </View>
           )}
         />
@@ -152,9 +161,51 @@ const styles = StyleSheet.create({
     alignItems: "center",
     elevation: 4,
   },
-  myTournaments: {
+  myTournamentsContainer: {
     backgroundColor: "#DCDCDC",
     marginTop: 20,
     padding: 12,
+    gap: 5,
+    borderRadius: 8,
+  },
+  Header: {
+    justifyContent: "center",
+    textAlign: "center",
+    alignSelf: "center",
+    paddingVertical: 5,
+    fontSize: 18,
+    // backgroundColor: 'green',
+    width: "100%",
+    borderRadius: 8,
+    // elevation: 2,
+  },
+  headerRow: {
+    backgroundColor: "#ff4057",
+    minHeight: 50,
+    flexDirection: "row",
+    borderRadius: 8,
+    paddingHorizontal: 4,
+    alignItems: "center",
+    fontWeight: "bold",
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    height: 50,
+    borderBottomWidth: 1,
+    borderBottomColor: 'dark grey',
+  },
+  name: {
+    alignSelf: "center",
+    fontWeight: "bold",
+  },
+  button: {
+    backgroundColor: "#ff4057",
+    marginHorizontal: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 8,
+    elevation: 8,
+    borderRadius: 8,
   },
 });
