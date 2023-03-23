@@ -43,10 +43,12 @@ export default function App() {
       tee: null,
     },
   });
+
+
   // const [round1teebox, setRound1Teebox] = useState("");
   // const [round2teebox, setRound2Teebox] = useState("");
   // const [round3teebox, setRound3Teebox] = useState("");
-  const [teebox, setTeebox] = useState("");
+  const [teebox, setTeebox] = useState(null);
 
   useEffect(() => {
     async function getCurrentUser() {
