@@ -51,18 +51,20 @@ const BottomTabNavigator = () => {
     try {
       const results = await query.find();
       console.log("RESULTS: ", results);
+
       const options = results.map((result) => ({
-        text: result.get("name"),
+        text: `${result.get('name')} (${result.get('total_yardage')} yards)`,
         onPress: () => {
           setTeebox(result.get("name"));
           setModalVisible(false);
         },
       }));
+
       setTeeboxOptions([
         ...options,
         { text: "Cancel", onPress: () => setModalVisible(false) },
       ]);
-      // console.log("TEE BOX OPTIONS: ", teeboxOptions);
+      console.log(" OPTIONS: ", options);
     } catch (error) {
       console.error(error);
     }
@@ -101,7 +103,7 @@ const BottomTabNavigator = () => {
                   style={{
                     fontSize: 16,
                     color: option.text === "Cancel" ? "red" : "black",
-                    marginBottom: 10,
+                    marginVertical: 10,
                   }}
                 >
                   {option.text}
