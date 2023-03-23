@@ -15,15 +15,16 @@ import Parse from "parse/react-native";
 // import { FlatList,  } from "react-native-gesture-handler";
 // const Scorecard = ({ holes, onScoreSubmit }) => {
 
-const Scorecard = () => {
+const Scorecard = (teebox) => {
   const [totalScore, setTotalScore] = useState(0);
-  const { teebox, setteebox } = useContext(TournamentContext);
+  // const { teebox, setteebox } = useContext(TournamentContext);
   const [yardages, setYardages] = useState([]);
   const [holes, setHoles] = useState([]);
   const [par, setPar] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    teebox = teebox['teebox'];
     const Tee = Parse.Object.extend("Tee");
     const teeQuery = new Parse.Query(Tee);
     teeQuery.equalTo("name", teebox);

@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Image,
   View,
@@ -22,6 +22,10 @@ const Tab = createBottomTabNavigator();
 
 const BottomTabNavigator = () => {
   const { teebox, setTeebox } = useContext(TournamentContext);
+  const { round1teebox, setRound1Teebox } = useContext(TournamentContext);
+  const { round2teebox, setRound2Teebox } = useContext(TournamentContext);
+  const { round3teebox, setRound3Teebox } = useContext(TournamentContext);
+
   const [modalVisible, setModalVisible] = useState(false);
   const [teeboxOptions, setTeeboxOptions] = useState([]);
   // const [courseId, setCourseId] = ('');
@@ -32,30 +36,34 @@ const BottomTabNavigator = () => {
   };
 
   const showAlert = async (courseName) => {
+
     if (courseName == 'Tobiano') {
-      courseId = 'scQ2spSAZK'
+      courseId = 'scQ2spSAZK';
     }else if (courseName === 'Big Horn') {
-      courseId = 'BruPe84n5T'
+      courseId = 'BruPe84n5T';
     }else if (courseName === 'Dune') {
       courseId = 'V48QyvQUdh';
-
     }
-    console.log("COURSE ID : ", courseId);
+
     const Tee = Parse.Object.extend("Tee");
     const query = new Parse.Query(Tee);
     query.equalTo("course", {
       __type: "Pointer",
       className: "Course",
       objectId: courseId,
-    }); // replace "courseId" with the actual objectId of the course you want to filter by
+    });
     try {
       const results = await query.find();
-      console.log("RESULTS: ", results);
-
       const options = results.map((result) => ({
         text: `${result.get('name')} (${result.get('total_yardage')} yards)`,
         onPress: () => {
-          setTeebox(result.get("name"));
+          if (courseName == 'Tobiano') {
+            setRound1Teebox(result.get('name'));
+          }else if (courseName === 'Big Horn') {
+            setRound2Teebox(result.get('name'));
+          }else if (courseName === 'Dune') {
+            setRound3Teebox(result.get('name'));
+          }
           setModalVisible(false);
         },
       }));
@@ -64,11 +72,11 @@ const BottomTabNavigator = () => {
         ...options,
         { text: "Cancel", onPress: () => setModalVisible(false) },
       ]);
-      console.log(" OPTIONS: ", options);
-    } catch (error) {
+     } catch (error) {
       console.error(error);
     }
   };
+
 
   return (
     <View style={{ flex: 1 }}>
@@ -119,7 +127,7 @@ const BottomTabNavigator = () => {
           headerTitle: () => (
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Text style={{ fontSize: 18 }}>{route.name}</Text>
-              {teebox ? (
+              {round1teebox || round2teebox || round3teebox ? (
                 <TouchableOpacity
                   style={{ marginLeft: 200 }}
                   onPress={() => handleTeeboxSelection(route.name)}
@@ -133,7 +141,8 @@ const BottomTabNavigator = () => {
                       borderRadius: 8,
                       padding: 5,
                     }}
-                  >{`${teebox} tees`}</Text>
+                  >{route.name === "Tobiano" ? round1teebox : route.name === "Big Horn" ? round2teebox : round3teebox} tees</Text>
+
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
@@ -178,7 +187,7 @@ const BottomTabNavigator = () => {
       >
         <Tab.Screen
           name={"Tobiano"}
-          children={() => <Scorecard teebox={teebox} />}
+          children={() => <Scorecard teebox={round1teebox} />}
           options={{
             tabBarActiveBackgroundColor: "#ff4057",
             tabBarActiveTintColor: "white",
@@ -186,7 +195,7 @@ const BottomTabNavigator = () => {
         />
         <Tab.Screen
           name={"Big Horn"}
-          children={() => <Scorecard teebox={teebox} />}
+          children={() => <Scorecard teebox={round2teebox} />}
           options={{
             tabBarActiveBackgroundColor: "#ff4057",
             tabBarActiveTintColor: "white",
@@ -194,7 +203,7 @@ const BottomTabNavigator = () => {
         />
         <Tab.Screen
           name={"Dune"}
-          children={() => <Scorecard teebox={teebox} />}
+          children={() => <Scorecard teebox={round3teebox} />}
           options={{
             tabBarActiveBackgroundColor: "#ff4057",
             tabBarActiveTintColor: "white",

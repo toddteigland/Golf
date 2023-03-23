@@ -45,9 +45,9 @@ export default function App() {
   });
 
 
-  // const [round1teebox, setRound1Teebox] = useState("");
-  // const [round2teebox, setRound2Teebox] = useState("");
-  // const [round3teebox, setRound3Teebox] = useState("");
+  const [round1teebox, setRound1Teebox] = useState(null);
+  const [round2teebox, setRound2Teebox] = useState(null);
+  const [round3teebox, setRound3Teebox] = useState(null);
   const [teebox, setTeebox] = useState(null);
 
   useEffect(() => {
@@ -112,6 +112,12 @@ export default function App() {
           setCurrentTournament,
           teebox,
           setTeebox,
+          round1teebox,
+          setRound1Teebox,
+          round2teebox,
+          setRound2Teebox,
+          round3teebox,
+          setRound3Teebox
         }}
       >
         <NavigationContainer>
