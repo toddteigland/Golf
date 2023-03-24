@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,29 +6,34 @@ import {
   Button,
   StyleSheet,
   ScrollView,
-  FlatList,
-  LogBox,
+  TouchableOpacity,
+  Alert,
 } from "react-native";
-import { TournamentContext } from "./context/TournamentContext";
 import Parse from "parse/react-native";
-
-// import { FlatList,  } from "react-native-gesture-handler";
-// const Scorecard = ({ holes, onScoreSubmit }) => {
 
 const Scorecard = (teebox) => {
   const [totalScore, setTotalScore] = useState(0);
-  // const { teebox, setteebox } = useContext(TournamentContext);
+  const [scores, setScores] = useState([
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  ]);
+  const [front9Scores, setFront9Scores] = useState([]);
+  const [front9Total, setFront9Total] = useState(0);
+  const [back9Scores, setBack9Scores] = useState([]);
+  const [back9Total , setBack9Total]= useState(0)
+  const [overUnderPar, setOverUnderPar] = useState(0);
+  const [canSubmit, setCanSubmit] = useState(false);
   const [yardages, setYardages] = useState([]);
   const [holes, setHoles] = useState([]);
   const [par, setPar] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    teebox = teebox['teebox'];
+    teebox = teebox["teebox"];
     const Tee = Parse.Object.extend("Tee");
     const teeQuery = new Parse.Query(Tee);
     teeQuery.equalTo("name", teebox);
-    teeQuery.first()
+    teeQuery
+      .first()
       .then((tee) => {
         const yardages = tee.get("hole_yardages");
         const holes = tee.get("holes");
@@ -47,17 +52,75 @@ const Scorecard = (teebox) => {
 
   const handleScoreChange = (index, value) => {
     const newScores = [...scores];
-    newScores[index].score = parseInt(value) || null;
+    if (value === "") {
+      newScores[index] = 0;
+    } else {
+      newScores[index] = parseInt(value);
+    }
     setScores(newScores);
-    calculateTotalScore(newScores);
-  };
-
-  const calculateTotalScore = (newScores) => {
     let total = 0;
-    newScores.forEach((score) => {
-      total += score.score || 0;
+    let overUnder = 0;
+    newScores.forEach((score, index) => {
+      if (score > 0) {
+        total += score || 0;
+        overUnder += (score || 0) - par[index];
+      }
     });
     setTotalScore(total);
+    setOverUnderPar(overUnder);
+  };
+  
+  // Sets front9 and back9 scores + totals
+  useEffect(() => {
+    setFront9Scores(scores.slice(0, 9));
+    setBack9Scores(scores.slice(9, 18));
+  }, [scores]);
+  useEffect(() => {
+    setFront9Total(front9Scores.reduce((total, score) => total + score, 0));
+    setBack9Total(back9Scores.reduce((total, score) => total + score, 0));
+  }, [front9Scores, back9Scores]);
+
+  // Submits score to db after checking if possible
+  const handleScoreSubmit = () => {
+    if (!canSubmit) {
+      Alert.alert("Please enter a score for each hole!");
+    } else if (canSubmit) {
+      Alert.alert(`Score entered!`);
+    }
+  };
+
+  // Checks if any scores have a 0, if so, cannot submit score
+  useEffect(() => {
+    const hasZeroScore = scores.some((score) => score === 0);
+    setCanSubmit(!hasZeroScore);
+  }, [scores]);
+
+  //Submit button border turns green when all scores are entered
+  const getSubmitButtonStyle = () => {
+    if (canSubmit) {
+      return {
+        height: 45,
+        borderColor: "green",
+        borderWidth: 1,
+        backgroundColor: "lightgray",
+        borderRadius: 8,
+        padding: 4,
+        marginVertical: 8,
+        justifyContent: "center",
+        elevation: 4,
+      };
+    } else {
+      return {
+        height: 45,
+        borderColor: "red",
+        borderWidth: 1,
+        backgroundColor: "lightgray",
+        borderRadius: 8,
+        padding: 4,
+        marginVertical: 8,
+        justifyContent: "center",
+      };
+    }
   };
 
   if (loading) {
@@ -86,9 +149,39 @@ const Scorecard = (teebox) => {
           </View>
         ))}
       </ScrollView>
-      <View style={styles.total}>
-        <Text style={styles.totalText}>Total:</Text>
-        <Text style={styles.totalText}>{totalScore}</Text>
+      <View style={styles.scorecardFooter}>
+        <View style={styles.submitButton}>
+          <TouchableOpacity
+            style={getSubmitButtonStyle()}
+            onPress={handleScoreSubmit}
+          >
+            <Text>Submit Score</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View>
+          <Text>Front 9:</Text>
+        <Text>
+          {front9Total} ({overUnderPar > 0 ? "+" : ""}
+          {overUnderPar})
+        </Text>
+        </View>
+
+        <View>
+          <Text>Back 9:</Text>
+        <Text>
+          {back9Total} ({overUnderPar > 0 ? "+" : ""}
+          {overUnderPar})
+        </Text>
+        </View>
+
+        <View style={styles.total}>
+          <Text style={styles.totalText}>Total:</Text>
+          <Text style={styles.totalText}>
+            {totalScore} ({overUnderPar > 0 ? "+" : ""}
+            {overUnderPar})
+          </Text>
+        </View>
       </View>
     </View>
   );
@@ -100,13 +193,13 @@ const styles = StyleSheet.create({
     padding: 16,
     elevation: 4,
     backgroundColor: "#fff",
-    borderColor: 'grey',
+    borderColor: "grey",
     borderWidth: 2,
   },
   header: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    // alignContent: "center",
+    // justifyContent: "space-between",
     backgroundColor: "#DCDCDC",
     borderRadius: 8,
     paddingVertical: 10,
@@ -117,20 +210,22 @@ const styles = StyleSheet.create({
     flex: 0.6,
     textAlign: "left",
     fontWeight: "bold",
+    // alignSelf: 'center',
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    // borderColor: 'red',
+    // borderWidth: 1,
   },
   rowText: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 8,
-  },
-  total: {
-    alignContent: "flex-end",
+    // borderColor: 'blue',
+    // borderWidth: 1,
   },
   holeNumber: {
     fontSize: 16,
@@ -154,8 +249,35 @@ const styles = StyleSheet.create({
     paddingLeft: 8,
   },
   list: {
-    
-  }
+    // borderBottomColor: "red",
+    // borderBottomWidth: 1,
+  },
+  scorecardFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 4,
+    alignItems: "center",
+  },
+  submitButton: {
+    // height: '100%',
+    // borderColor: 'gray',
+    // borderWidth: 1,
+    // backgroundColor: 'lightgray',
+    // borderRadius: 8,
+    // padding: 4,
+    // marginVertical: 8,
+  },
+  total: {
+    borderWidth: 1,
+    borderColor: "red",
+    borderRadius: 8,
+    padding: 4,
+    alignItems: 'flex-end'
+  },
+  totalText: {
+    fontWeight: "bold",
+    fontSize: 18,
+  },
 });
 
 export default Scorecard;
