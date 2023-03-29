@@ -20,7 +20,7 @@ const iconLeaderboard = require("../../assets/icons/iconLeaderboard.png");
 
 const Tab = createBottomTabNavigator();
 
-const BottomTabNavigator = () => {
+const BottomTabNavigator = ( {route} ) => {
   const { teebox, setTeebox } = useContext(TournamentContext);
   const { round1teebox, setRound1Teebox } = useContext(TournamentContext);
   const { round2teebox, setRound2Teebox } = useContext(TournamentContext);
@@ -127,7 +127,7 @@ const BottomTabNavigator = () => {
           headerTitle: () => (
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Text style={{ fontSize: 18 }}>{route.name}</Text>
-              {round1teebox || round2teebox || round3teebox ? (
+              {route.name !== 'Leaderboard' && ( round1teebox || round2teebox || round3teebox ? (
                 <TouchableOpacity
                   style={{ marginLeft: 200 }}
                   onPress={() => handleTeeboxSelection(route.name)}
@@ -162,6 +162,7 @@ const BottomTabNavigator = () => {
                     Select Tee
                   </Text>
                 </TouchableOpacity>
+              )
               )}
             </View>
           ),

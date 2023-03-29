@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -10,12 +10,11 @@ import {
   Alert,
 } from "react-native";
 import Parse from "parse/react-native";
+import { TournamentContext } from "./context/TournamentContext";
 
 const Scorecard = (teebox) => {
   const [totalScore, setTotalScore] = useState(0);
-  const [scores, setScores] = useState([
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  ]);
+  const [scores, setScores] = useState(Array(18).fill(0));
   const [front9Scores, setFront9Scores] = useState([]);
   const [front9Total, setFront9Total] = useState(0);
   const [back9Scores, setBack9Scores] = useState([]);
@@ -26,15 +25,16 @@ const Scorecard = (teebox) => {
   const [holes, setHoles] = useState([]);
   const [par, setPar] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { currentTournament } = useContext(TournamentContext)
 
   useEffect(() => {
-    teebox = teebox["teebox"];
+    // const currentTeebox = teebox["teebox"];
     const Tee = Parse.Object.extend("Tee");
     const teeQuery = new Parse.Query(Tee);
-    teeQuery.equalTo("name", teebox);
+    teeQuery.equalTo("name", Tee);
     teeQuery
-      .first()
-      .then((tee) => {
+    .first()
+    .then((tee) => {
         const yardages = tee.get("hole_yardages");
         const holes = tee.get("holes");
         const par = tee.get("hole_par");
@@ -79,13 +79,31 @@ const Scorecard = (teebox) => {
     setFront9Total(front9Scores.reduce((total, score) => total + score, 0));
     setBack9Total(back9Scores.reduce((total, score) => total + score, 0));
   }, [front9Scores, back9Scores]);
-
+  
   // Submits score to db after checking if possible
-  const handleScoreSubmit = () => {
+  const handleScoreSubmit = async () => {
     if (!canSubmit) {
       Alert.alert("Please enter a score for each hole!");
-    } else if (canSubmit) {
-      Alert.alert(`Score entered!`);
+    } else {
+      const tournament = new Parse.Object('Tournaments');
+      tournament.id = currentTournament;
+      const user = Parse.User.current();
+      const tee = await new Parse.Query("Tee").equalTo("name", teebox["teebox"]).first();
+      const course = await tee.get("course");
+      const Score = Parse.Object.extend("scores");
+      const score = new Score();
+      score.set("hole_scores", scores);
+      score.set("tournament", tournament);
+      score.set("user", user);
+      score.set("tee", tee);
+      score.set("course", course);
+      try {
+        await score.save();
+        Alert.alert("Score entered!");
+      } catch (error) {
+        console.log("Error submitting score: ", error);
+        Alert.alert("Error submitting score. Please try again later.");
+      }
     }
   };
 
@@ -138,7 +156,7 @@ const Scorecard = (teebox) => {
       <ScrollView style={styles.list}>
         {holes.map((hole, index) => (
           <View key={index} style={styles.row}>
-            <Text style={styles.holeNumber}>{index + 1}</Text>
+            <Text style={styles.holeNumber}>{hole}</Text>
             <Text style={styles.holePar}>{par[index]}</Text>
             <Text style={styles.holeYards}>{yardages[index]}</Text>
             <TextInput

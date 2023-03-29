@@ -29,20 +29,22 @@ export default function App() {
   const [username, setUsername] = useState(null);
   const [handicap, setHandicap] = useState(null);
   const [myTournaments, setMyTournaments] = useState([]);
-  const [currentTournament, setCurrentTournament] = useState({
-    course1: {
-      name: null,
-      tee: null,
-    },
-    course2: {
-      name: null,
-      tee: null,
-    },
-    course3: {
-      name: null,
-      tee: null,
-    },
-  });
+  const [currentTournament, setCurrentTournament] = useState('GCkeqSjc98'
+    // Sandbagger: {
+    //   Tobiano: {
+    //     round1teebox: null,
+    //     round: 1,
+    //   },
+    //   Big_Horn: {
+    //     round2teebox: null,
+    //     round: 2,
+    //   },
+    //   Dune: {
+    //     round3teebox: null,
+    //     round: 3,
+    //   },
+    // }
+  );
 
 
   const [round1teebox, setRound1Teebox] = useState(null);
@@ -58,6 +60,7 @@ export default function App() {
         const user = await query.get(currentUser);
         setUsername(currentUser.getUsername());
         setHandicap(user.get("handicap"));
+        // console.log('CURRENT USER: ', user);
       }
     }
     getCurrentUser();
@@ -109,7 +112,7 @@ export default function App() {
           myTournaments,
           setMyTournaments,
           currentTournament,
-          setCurrentTournament,
+          // setCurrentTournament,
           teebox,
           setTeebox,
           round1teebox,
