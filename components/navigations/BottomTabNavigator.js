@@ -21,7 +21,7 @@ const iconLeaderboard = require("../../assets/icons/iconLeaderboard.png");
 const Tab = createBottomTabNavigator();
 
 const BottomTabNavigator = ( {route} ) => {
-  const { teebox, setTeebox } = useContext(TournamentContext);
+  // const { teebox, setTeebox } = useContext(TournamentContext);
   const { round1teebox, setRound1Teebox } = useContext(TournamentContext);
   const { round2teebox, setRound2Teebox } = useContext(TournamentContext);
   const { round3teebox, setRound3Teebox } = useContext(TournamentContext);

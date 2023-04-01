@@ -85,12 +85,27 @@ const Scorecard = (teebox) => {
     if (!canSubmit) {
       Alert.alert("Please enter a score for each hole!");
     } else {
-      const tournament = new Parse.Object('Tournaments');
+      const tournament = new Parse.Object("Tournaments");
       tournament.id = currentTournament;
       const user = Parse.User.current();
       const tee = await new Parse.Query("Tee").equalTo("name", teebox["teebox"]).first();
       const course = await tee.get("course");
+      
+      // Query for existing score
       const Score = Parse.Object.extend("scores");
+      const existingScoreQuery = new Parse.Query(Score);
+      existingScoreQuery.equalTo("tournament", tournament);
+      existingScoreQuery.equalTo("user", user);
+      // existingScoreQuery.equalTo("tee", tee);
+      existingScoreQuery.equalTo("course", course);
+  
+      const existingScore = await existingScoreQuery.first();
+      if (existingScore) {
+        Alert.alert("Score already entered for this round.");
+        return;
+      }
+  
+      // Submit new score
       const score = new Score();
       score.set("hole_scores", scores);
       score.set("tournament", tournament);
@@ -98,14 +113,16 @@ const Scorecard = (teebox) => {
       score.set("tee", tee);
       score.set("course", course);
       try {
+        console.log("COURSE::", course);
         await score.save();
         Alert.alert("Score entered!");
       } catch (error) {
         console.log("Error submitting score: ", error);
-        Alert.alert("Error submitting score. Please try again later.");
+        Alert.alert("Error submitting score. Have you selected a tee?");
       }
     }
   };
+  
 
   // Checks if any scores have a 0, if so, cannot submit score
   useEffect(() => {
