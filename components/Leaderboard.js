@@ -52,7 +52,7 @@ const Leaderboard = () => {
       <ScrollView horizontal persistentScrollbar>
         <View style={styles.container}>
           <View style={[styles.row, styles.headerRow]}>
-            <View style={styles.column}>
+            <View style={styles.nameColumn}>
               <Text style={styles.playerName}>Player</Text>
             </View>
             {[...Array(18)].map((_, i) => (
@@ -84,7 +84,7 @@ const Leaderboard = () => {
                   style={styles.row}
                   key={player.get("user").get("username")}
                 >
-                  <View style={[styles.column, { flexGrow: 1 }]}>
+                  <View style={styles.nameColumn}>
                     <Text style={styles.playerName}>
                       {player.get("user").get("username")}
                     </Text>
@@ -94,7 +94,7 @@ const Leaderboard = () => {
                       <Text style={styles.score}>{score}</Text>
                     </View>
                   ))}
-                  <View style={[styles.column, styles.totalColumn]}>
+                  <View style={styles.totalColumn}>
                     <Text style={[styles.score, styles.total]}>{totalScore}</Text>
                   </View>
                 </View>
@@ -109,14 +109,14 @@ const Leaderboard = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // justifyContent: "flex-start",
-    // alignItems: "stretch",
+    alignItems: "flex-start",
     margin: 10,
-    width: 1200,
+    maxWidth: 'auto',
+    
   },
   row: {
     flexDirection: "row",
-    alignItems: "center",
+    // alignItems: "center",
     // justifyContent: "space-between",
     marginBottom: 10,
     borderBottomColor: "gray",
@@ -129,20 +129,28 @@ const styles = StyleSheet.create({
     borderRightWidth: 1,
     borderRightColor: "red",
     // paddingRight: 2,
-    // width: 10,
+    width: 35,
     alignContent: "center",
     // paddingRight: 4
+  },
+  nameColumn: {
+    width: 80,
+    alignItems: 'flex-start',
+    borderRightWidth: 1,
+    borderRightColor: "red",
   },
   totalColumn: {
     // position: 'absolute',
     // left: 370,
     // zIndex: 1,
-    
+    width: 50,
+    borderRightWidth: 1,
+    borderRightColor: "red",
 },
   header: {
     fontWeight: "bold",
-    fontSize: 17,
-    width: 40,
+    fontSize: 18,
+    width: 50,
     // justifyContent: 'space-between',
     textAlign: "center",
     alignSelf: 'center',
