@@ -18,14 +18,31 @@ const Scorecard = (teebox) => {
   const [front9Scores, setFront9Scores] = useState([]);
   const [front9Total, setFront9Total] = useState(0);
   const [back9Scores, setBack9Scores] = useState([]);
-  const [back9Total , setBack9Total]= useState(0)
+  const [back9Total, setBack9Total] = useState(0);
   const [overUnderPar, setOverUnderPar] = useState(0);
   const [canSubmit, setCanSubmit] = useState(false);
   const [yardages, setYardages] = useState([]);
   const [holes, setHoles] = useState([]);
   const [par, setPar] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { currentTournament } = useContext(TournamentContext)
+  const { currentTournament } = useContext(TournamentContext);
+
+  const queryExistingScore = async (tournament, user, tee, course) => {
+    const Score = Parse.Object.extend("scores");
+    const existingScoreQuery = new Parse.Query(Score);
+    existingScoreQuery.equalTo("tournament", tournament);
+    existingScoreQuery.equalTo("user", user);
+    existingScoreQuery.equalTo("tee", tee);
+    existingScoreQuery.equalTo("course", course);
+
+    const existingScore = await existingScoreQuery.first();
+    console.log('EXISTING SCORE:: ', existingScore);
+    return {existingScore, Score};
+  };
+
+  useEffect(() => {
+    // queryExistingScore();
+  }, []);
 
   useEffect(() => {
     // const currentTeebox = teebox["teebox"];
@@ -33,8 +50,8 @@ const Scorecard = (teebox) => {
     const teeQuery = new Parse.Query(Tee);
     teeQuery.equalTo("name", Tee);
     teeQuery
-    .first()
-    .then((tee) => {
+      .first()
+      .then((tee) => {
         const yardages = tee.get("hole_yardages");
         const holes = tee.get("holes");
         const par = tee.get("hole_par");
@@ -69,7 +86,7 @@ const Scorecard = (teebox) => {
     setTotalScore(total);
     setOverUnderPar(overUnder);
   };
-  
+
   // Sets front9 and back9 scores + totals
   useEffect(() => {
     setFront9Scores(scores.slice(0, 9));
@@ -79,7 +96,7 @@ const Scorecard = (teebox) => {
     setFront9Total(front9Scores.reduce((total, score) => total + score, 0));
     setBack9Total(back9Scores.reduce((total, score) => total + score, 0));
   }, [front9Scores, back9Scores]);
-  
+
   // Submits score to db after checking if possible
   const handleScoreSubmit = async () => {
     if (!canSubmit) {
@@ -88,23 +105,18 @@ const Scorecard = (teebox) => {
       const tournament = new Parse.Object("Tournaments");
       tournament.id = currentTournament;
       const user = Parse.User.current();
-      const tee = await new Parse.Query("Tee").equalTo("name", teebox["teebox"]).first();
+      const tee = await new Parse.Query("Tee")
+        .equalTo("name", teebox["teebox"])
+        .first();
       const course = await tee.get("course");
-      
-      // Query for existing score
-      const Score = Parse.Object.extend("scores");
-      const existingScoreQuery = new Parse.Query(Score);
-      existingScoreQuery.equalTo("tournament", tournament);
-      existingScoreQuery.equalTo("user", user);
-      // existingScoreQuery.equalTo("tee", tee);
-      existingScoreQuery.equalTo("course", course);
-  
-      const existingScore = await existingScoreQuery.first();
+      console.log('COURSE: ', course);
+
+      const {existingScore, Score}  = await queryExistingScore(tournament, user, tee, course);
       if (existingScore) {
         Alert.alert("Score already entered for this round.");
         return;
       }
-  
+
       // Submit new score
       const score = new Score();
       score.set("hole_scores", scores);
@@ -122,7 +134,6 @@ const Scorecard = (teebox) => {
       }
     }
   };
-  
 
   // Checks if any scores have a 0, if so, cannot submit score
   useEffect(() => {
@@ -196,18 +207,18 @@ const Scorecard = (teebox) => {
 
         <View>
           <Text>Front 9:</Text>
-        <Text>
-          {front9Total} ({overUnderPar > 0 ? "+" : ""}
-          {overUnderPar})
-        </Text>
+          <Text>
+            {front9Total} ({overUnderPar > 0 ? "+" : ""}
+            {overUnderPar})
+          </Text>
         </View>
 
         <View>
           <Text>Back 9:</Text>
-        <Text>
-          {back9Total} ({overUnderPar > 0 ? "+" : ""}
-          {overUnderPar})
-        </Text>
+          <Text>
+            {back9Total} ({overUnderPar > 0 ? "+" : ""}
+            {overUnderPar})
+          </Text>
         </View>
 
         <View style={styles.total}>
@@ -307,7 +318,7 @@ const styles = StyleSheet.create({
     borderColor: "red",
     borderRadius: 8,
     padding: 4,
-    alignItems: 'flex-end'
+    alignItems: "flex-end",
   },
   totalText: {
     fontWeight: "bold",
