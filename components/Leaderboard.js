@@ -15,6 +15,7 @@ const Leaderboard = () => {
   const [loading, setLoading] = useState(true);
 
   const setLeaderboard = (button) => {
+    setLoading(true);
     setSelectedLeaderboard(button);
   };
 
