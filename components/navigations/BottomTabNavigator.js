@@ -125,17 +125,17 @@ const BottomTabNavigator = ( {route} ) => {
       <Tab.Navigator
         screenOptions={({ route }) => ({
           headerTitle: () => (
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={{ flexDirection: "row", justifyContent: 'space-between',  minWidth: '100%' }}>
               <Text style={{ fontSize: 18 }}>{route.name}</Text>
               {route.name !== 'Leaderboard' && ( round1teebox || round2teebox || round3teebox ? (
                 <TouchableOpacity
-                  style={{ marginLeft: 200 }}
+                  style={{  }}
                   onPress={() => handleTeeboxSelection(route.name)}
                 >
                   <Text
                     style={{
                       fontSize: 16,
-                      marginLeft: 8,
+                      width:'auto',
                       borderColor: "grey",
                       borderWidth: 1,
                       borderRadius: 8,
@@ -146,7 +146,7 @@ const BottomTabNavigator = ( {route} ) => {
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
-                  style={{ marginLeft: 208 }}
+                  style={{  }}
                   onPress={() => handleTeeboxSelection(route.name)}
                 >
                   <Text
@@ -188,7 +188,7 @@ const BottomTabNavigator = ( {route} ) => {
       >
         <Tab.Screen
           name={"Tobiano"}
-          children={() => <Scorecard teebox={round1teebox} />}
+          children={() => <Scorecard teebox={round1teebox} course={'scQ2spSAZK'} />}
           options={{
             tabBarActiveBackgroundColor: "#ff4057",
             tabBarActiveTintColor: "white",
@@ -196,7 +196,7 @@ const BottomTabNavigator = ( {route} ) => {
         />
         <Tab.Screen
           name={"Big Horn"}
-          children={() => <Scorecard teebox={round2teebox} />}
+          children={() => <Scorecard teebox={round2teebox} course={'BruPe84n5T'} />}
           options={{
             tabBarActiveBackgroundColor: "#ff4057",
             tabBarActiveTintColor: "white",
@@ -204,7 +204,7 @@ const BottomTabNavigator = ( {route} ) => {
         />
         <Tab.Screen
           name={"Dune"}
-          children={() => <Scorecard teebox={round3teebox} />}
+          children={() => <Scorecard teebox={round3teebox} course={'V48QyvQUdh'} />}
           options={{
             tabBarActiveBackgroundColor: "#ff4057",
             tabBarActiveTintColor: "white",

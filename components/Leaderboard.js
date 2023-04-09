@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, ActivityIndicator } from "react-native";
 import { TournamentContext } from "./context/TournamentContext";
 import Parse from "parse/react-native";
 import { ScrollView } from "react-native-gesture-handler";
@@ -10,7 +10,7 @@ const Leaderboard = () => {
   const [players, setPlayers] = useState([]);
   // const [scores, setScores] = useState([]);
   const [queryResults, setQueryResults] = useState([]);
-  const [selectedLeaderboard, setSelectedLeaderboard] = useState("scQ2spSAZK");
+  const [selectedLeaderboard, setSelectedLeaderboard] = useState("");
   const [scoresByUserAndCourse, setScoresByUserAndCourse] = useState({});
   const [loading, setLoading] = useState(true);
 
@@ -106,8 +106,9 @@ const Leaderboard = () => {
 
   if (loading) {
     return (
-      <View>
+      <View style={styles.loading}>
         <Text>Loading leaderboard...</Text>
+        <ActivityIndicator size="large" color="#0000ff" />
       </View>
     );
   } else {
@@ -372,6 +373,12 @@ const styles = StyleSheet.create({
   total: {
     fontWeight: "bold",
     fontSize: 17,
+  },
+  loading: {
+    // flex: 5,
+
+    flexDirection: 'row',
+    justifyContent: 'center'
   },
 });
 

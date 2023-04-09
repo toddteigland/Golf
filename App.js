@@ -76,7 +76,7 @@ export default function App() {
           setMyTournaments(results);
         },
         (error) => {
-          console.error(error);
+          console.error('FETCH MY TOURNAMENTS ERROR: ', error);
         }
       );
     }
@@ -165,6 +165,7 @@ export default function App() {
                               height: 30,
                               borderRadius: 8,
                               textAlign: "center",
+                              textAlignVertical: 'center'
                             }}
                           >
                             Exit

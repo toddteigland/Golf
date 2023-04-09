@@ -37,9 +37,9 @@ export default function UserLogin() {
           setUsername(usernameValue);
           setHandicap(currentUser.get("handicap"));
           Alert.alert(
-            `${usernameValue}(${currentUser.get(
+            `${usernameValue} (${currentUser.get(
               "handicap"
-            )}) has been logged in`
+            )}) has been logged in!`
           );
         }
         navigation.navigate("Home");

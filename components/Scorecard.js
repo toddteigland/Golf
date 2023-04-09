@@ -8,17 +8,20 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import Parse from "parse/react-native";
 import { TournamentContext } from "./context/TournamentContext";
 
-const Scorecard = (teebox) => {
+const Scorecard = ({teebox, course}) => {
   const [totalScore, setTotalScore] = useState(0);
   const [scores, setScores] = useState(Array(18).fill(0));
   const [front9Scores, setFront9Scores] = useState([]);
   const [front9Total, setFront9Total] = useState(0);
+  const [front9OverUnder, setFront9OverUnder] = useState(0);
   const [back9Scores, setBack9Scores] = useState([]);
   const [back9Total, setBack9Total] = useState(0);
+  const [back9OverUnder, setBack9OverUnder] = useState(0);
   const [overUnderPar, setOverUnderPar] = useState(0);
   const [canSubmit, setCanSubmit] = useState(false);
   const [yardages, setYardages] = useState([]);
@@ -27,22 +30,32 @@ const Scorecard = (teebox) => {
   const [loading, setLoading] = useState(true);
   const { currentTournament } = useContext(TournamentContext);
 
-  const queryExistingScore = async (tournament, user, tee, course) => {
+
+  // Check if user already has a score for this round/tournament
+  const queryExistingScore = async () => {
     const Score = Parse.Object.extend("scores");
     const existingScoreQuery = new Parse.Query(Score);
-    existingScoreQuery.equalTo("tournament", tournament);
-    existingScoreQuery.equalTo("user", user);
-    existingScoreQuery.equalTo("tee", tee);
-    existingScoreQuery.equalTo("course", course);
+    existingScoreQuery.include("tournament", currentTournament);
+    existingScoreQuery.include("user", Parse.User.current());
+    existingScoreQuery.include("course", course);
 
-    const existingScore = await existingScoreQuery.first();
-    console.log('EXISTING SCORE:: ', existingScore);
-    return {existingScore, Score};
+  
+    try {
+      const existingScore = await existingScoreQuery.first();
+      // console.log("EXISTING SCORE:: ", existingScore);
+      return existingScore;
+    } catch (error) {
+      console.log("ERROR QUERYING EXISTING SCORE: ", error);
+      return null;
+    }
   };
+  
+  
 
   useEffect(() => {
-    // queryExistingScore();
-  }, []);
+    queryExistingScore();
+    console.log('TEEBOX', teebox);
+  }, [loading]);
 
   useEffect(() => {
     // const currentTeebox = teebox["teebox"];
@@ -77,14 +90,30 @@ const Scorecard = (teebox) => {
     setScores(newScores);
     let total = 0;
     let overUnder = 0;
+    let front9Total = 0;
+    let front9OverUnder = 0;
+    let back9Total = 0;
+    let back9OverUnder = 0;
+
     newScores.forEach((score, index) => {
       if (score > 0) {
         total += score || 0;
         overUnder += (score || 0) - par[index];
+        if (index < 9) {
+          front9Total += score || 0;
+          front9OverUnder += (score || 0) - par[index];
+        } else {
+          back9Total += score || 0;
+          back9OverUnder += (score || 0) - par[index];
+        }
       }
     });
-    setTotalScore(total);
     setOverUnderPar(overUnder);
+    setFront9Total(front9Total);
+    setTotalScore(total);
+    setFront9OverUnder(front9OverUnder);
+    setBack9Total(back9Total);
+    setBack9OverUnder(back9OverUnder);
   };
 
   // Sets front9 and back9 scores + totals
@@ -101,6 +130,8 @@ const Scorecard = (teebox) => {
   const handleScoreSubmit = async () => {
     if (!canSubmit) {
       Alert.alert("Please enter a score for each hole!");
+    } else if (teebox === null) {
+      Alert.alert("Please choose a teebox")
     } else {
       const tournament = new Parse.Object("Tournaments");
       tournament.id = currentTournament;
@@ -108,12 +139,14 @@ const Scorecard = (teebox) => {
       const tee = await new Parse.Query("Tee")
         .equalTo("name", teebox["teebox"])
         .first();
-      const course = await tee.get("course");
-      console.log('COURSE: ', course);
 
-      const {existingScore, Score}  = await queryExistingScore(tournament, user, tee, course);
+      const existingScore = await queryExistingScore(
+        tournament,
+        user,
+        course
+      );
       if (existingScore) {
-        Alert.alert("Score already entered for this round.");
+        Alert.alert("You have already entered a score for this round.");
         return;
       }
 
@@ -125,7 +158,6 @@ const Scorecard = (teebox) => {
       score.set("tee", tee);
       score.set("course", course);
       try {
-        console.log("COURSE::", course);
         await score.save();
         Alert.alert("Score entered!");
       } catch (error) {
@@ -143,7 +175,7 @@ const Scorecard = (teebox) => {
 
   //Submit button border turns green when all scores are entered
   const getSubmitButtonStyle = () => {
-    if (canSubmit) {
+    if (canSubmit && teebox !== null) {
       return {
         height: 45,
         borderColor: "green",
@@ -169,8 +201,39 @@ const Scorecard = (teebox) => {
     }
   };
 
+  const getBorderStyle = (index) => {
+    if (scores[index] && scores[index] < par[index]) {
+      return {
+        borderRadius: 50,
+        borderColor: "black",
+        borderWidth: 2,
+      };
+    } else if (scores[index] > par[index]) {
+      return {
+        borderRadius: 0,
+        borderColor: "red",
+        borderWidth: 2,
+      };
+    } else if (scores[index] === par[index]) {
+      return {
+        borderRadius: 0,
+      }
+    } else {
+      return {
+        borderRadius: 8,
+        borderColor: "gray",
+        borderWidth: 1,
+      };
+    }
+  }; 
+  
   if (loading) {
-    return <Text>Loading...</Text>;
+    return (
+      <View>
+        <Text>Loading Scorecard...</Text>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
   }
 
   return (
@@ -179,7 +242,7 @@ const Scorecard = (teebox) => {
         <Text style={styles.headerText}>Hole</Text>
         <Text style={styles.headerText}>Par</Text>
         <Text style={styles.headerText}>Yards</Text>
-        <Text style={styles.headerText}>Score</Text>
+        <Text style={[styles.headerText, styles.scoreText]}>Score</Text>
       </View>
       <ScrollView style={styles.list}>
         {holes.map((hole, index) => (
@@ -188,9 +251,9 @@ const Scorecard = (teebox) => {
             <Text style={styles.holePar}>{par[index]}</Text>
             <Text style={styles.holeYards}>{yardages[index]}</Text>
             <TextInput
-              style={styles.input}
-              keyboardType="numeric"
+              keyboardType= 'number-pad'
               onChangeText={(value) => handleScoreChange(index, value)}
+              style={[getBorderStyle(index), { height: 40, padding: 10, textAlign: 'center' }]}
             />
           </View>
         ))}
@@ -206,18 +269,18 @@ const Scorecard = (teebox) => {
         </View>
 
         <View>
-          <Text>Front 9:</Text>
+          <Text style={{fontWeight: 'bold'}}>Front 9:</Text>
           <Text>
-            {front9Total} ({overUnderPar > 0 ? "+" : ""}
-            {overUnderPar})
+            {front9Total} ({front9OverUnder > 0 ? "+" : ""}
+            {front9OverUnder})
           </Text>
         </View>
 
         <View>
-          <Text>Back 9:</Text>
+          <Text style={{fontWeight: 'bold'}}>Back 9:</Text>
           <Text>
-            {back9Total} ({overUnderPar > 0 ? "+" : ""}
-            {overUnderPar})
+            {back9Total} ({back9OverUnder > 0 ? "+" : ""}
+            {back9OverUnder})
           </Text>
         </View>
 
@@ -236,7 +299,7 @@ const Scorecard = (teebox) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    padding: 10,
     elevation: 4,
     backgroundColor: "#fff",
     borderColor: "grey",
@@ -244,24 +307,34 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    // alignContent: "center",
-    // justifyContent: "space-between",
+    alignContent: "space-around",
+    // justifyContent: "center",
     backgroundColor: "#DCDCDC",
     borderRadius: 8,
     paddingVertical: 10,
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
     marginBottom: 8,
+    // borderColor: 'red',
+    // borderWidth: 1,
   },
   headerText: {
     flex: 0.6,
-    textAlign: "left",
+    // justifyContent: 'space-between',
+    // textAlign: "center",
     fontWeight: "bold",
     // alignSelf: 'center',
+    // borderColor: 'blue',
+    // borderWidth: 1,
+  },
+  scoreText: {
+    textAlign: "right",
+    // paddingRight: 15,
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    paddingVertical: 2,
     // borderColor: 'red',
     // borderWidth: 1,
   },
